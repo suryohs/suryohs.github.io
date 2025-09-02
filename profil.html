@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f8fafc;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      font-size: clamp(32px, 10vw, 120px);
+      color: red;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="nama"></h1>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const nama = params.get('nama') || 'Tidak ada nama';
+    document.getElementById('nama').textContent = nama;
+  </script>
+</body>
+</html>
