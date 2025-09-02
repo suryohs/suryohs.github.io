@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hello World – Input Nama</title>
+  <style>
+    :root {
+      --bg: #0f172a;       /* slate-900 */
+      --panel: #111827cc;  /* gray-900 with a bit of alpha */
+      --text: #e5e7eb;     /* gray-200 */
+      --muted: #94a3b8;    /* slate-400 */
+      --accent: #22c55e;   /* green-500 */
+      --ring: #3b82f6;     /* blue-500 */
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1000px 800px at 50% -10%, #1f2937 0%, var(--bg) 60%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 16px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      background: linear-gradient(180deg, #111827aa, #11182766);
+      backdrop-filter: blur(6px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    h1 {
+      font-size: clamp(16px, 2.8vw, 22px);
+      font-weight: 600;
+      margin: 0 8px 0 0;
+      color: var(--muted);
+    }
+
+    .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    input[type="text"] {
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 12px;
+      border: 1px solid #334155; /* slate-700 */
+      background: #0b1220;       /* very dark */
+      color: var(--text);
+      outline: none;
+      min-width: min(520px, 80vw);
+    }
+    input[type="text"]:focus { box-shadow: 0 0 0 3px #3b82f633; border-color: var(--ring); }
+
+    button {
+      height: 40px;
+      padding: 0 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #052e16;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .05s ease, box-shadow .2s ease, background .2s ease;
+      box-shadow: 0 8px 20px #22c55e33;
+    }
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px); }
+
+    main {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .name-display {
+      text-align: center;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+      font-size: clamp(32px, 10vw, 128px); /* responsif */
+      text-shadow: 0 6px 30px #22c55e22, 0 2px 12px #0008;
+      max-width: 90vw;
+      word-break: break-word;
+    }
+
+    .placeholder {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: clamp(18px, 3.5vw, 28px);
+    }
+
+    footer {
+      padding: 10px 16px; color: #64748b; font-size: 12px; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hello, World!</h1>
+    <div class="controls">
+      <label for="nama" class="sr-only">Nama</label>
+      <input id="nama" type="text" placeholder="Ketik nama Anda…" autocomplete="off" />
+      <button id="tampil" type="button" aria-label="Tampilkan nama">Tampilkan</button>
+      <button id="bersih" type="button" aria-label="Hapus nama">Bersihkan</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="output" class="name-display placeholder">Nama Anda akan muncul besar di sini</div>
+  </main>
+
+  <footer>
+    Dibuat sederhana: ketik nama lalu klik <b>Tampilkan</b> atau tekan <b>Enter</b>.
+  </footer>
+
+  <script>
+    const input = document.getElementById('nama');
+    const out   = document.getElementById('output');
+    const show  = document.getElementById('tampil');
+    const clear = document.getElementById('bersih');
+
+    function render() {
+      const v = input.value.trim();
+      if (v.length === 0) {
+        out.textContent = 'Nama Anda akan muncul besar di sini';
+        out.classList.add('placeholder');
+        out.setAttribute('aria-live', 'off');
+      } else {
+        out.textContent = v;
+        out.classList.remove('placeholder');
+        out.setAttribute('aria-live', 'polite');
+      }
+    }
+
+    // Tampilkan saat klik tombol
+    show.addEventListener('click', render);
+
+    // Tampilkan saat tekan Enter di input
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        render();
+      }
+    });
+
+    // Bersihkan
+    clear.addEventListener('click', () => {
+      input.value = '';
+      render();
+      input.focus();
+    });
+
+    // Autofokus saat halaman dibuka
+    window.addEventListener('load', () => input.focus());
+  </script>
+</body>
+</html>
