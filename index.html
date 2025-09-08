@@ -3,19 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assesmen Sumatif</title>
+  <title>Asesmen Pythagoras</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    .container { padding: 20px; }
     .hidden { display: none; }
     .error { color: red; }
-    .question-nav { display: grid; grid-template-columns: repeat(5, 40px); gap: 5px; margin: 10px 0; }
-    .question-nav button { width: 40px; height: 40px; }
+    #timer { font-weight: bold; margin-bottom: 10px; }
+
+    /* Navigasi Soal */
+    #navContainer { width: 220px; float: left; margin-right: 20px; }
+    .question-nav { display: grid; grid-template-columns: repeat(5, 40px); gap: 5px; }
+    .question-nav button { width: 40px; height: 40px; cursor: pointer; }
     .answered { background: black; color: white; }
     .flagged { background: yellow; }
+    .unanswered { background: white; color: black; }
+
+    #questionArea { margin-left: 260px; }
+    #toggleNav { margin-bottom: 10px; }
+
+    /* Hasil */
+    pre { background: #f0f0f0; padding: 10px; }
   </style>
 </head>
 <body>
-  <!-- Halaman Login -->
+<div class="container">
+
+  <!-- LOGIN -->
   <div id="page-login">
     <h2>Login</h2>
     <label>Username:</label>
@@ -30,7 +44,7 @@
     <p id="loginError" class="error"></p>
   </div>
 
-  <!-- Halaman Konfirmasi -->
+  <!-- KONFIRMASI -->
   <div id="page-konfirmasi" class="hidden">
     <h2>Konfirmasi Mulai Tes</h2>
     <p>Nama: <span id="konfNama"></span></p>
@@ -42,186 +56,245 @@
     <p id="tokenError" class="error"></p>
   </div>
 
-  <!-- Halaman Asesmen -->
+  <!-- ASESMEN -->
   <div id="page-asesmen" class="hidden">
-    <h2>Asesmen</h2>
+    <h2>Asesmen Pythagoras</h2>
     <div id="timer"></div>
-    <div class="question-nav" id="nav"></div>
-    <div id="question"></div>
-    <button onclick="submitTes()">Selesai</button>
+    <button id="toggleNav" onclick="toggleNav()">Sembunyikan Navigasi</button>
+    <div id="navContainer">
+      <div class="question-nav" id="nav"></div>
+      <button style="margin-top:10px; background:red; color:white;" onclick="submitTes()">Selesai</button>
+    </div>
+    <div id="questionArea">
+      <div id="question"></div>
+      <button onclick="toggleFlag()">Tandai Ragu-Ragu</button>
+    </div>
   </div>
 
-  <!-- Halaman Result -->
+  <!-- HASIL -->
   <div id="page-result" class="hidden">
     <h2>Hasil</h2>
     <pre id="hasil"></pre>
     <div id="sendStatus" style="margin-top:10px; font-weight:bold;"></div>
   </div>
 
-  <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbwHHd6J6g0FDUTg7Q2XtJu4HUKYLBCSCKi9bhQVzW4_0gDBeseQwkoHjOKwFVhslKjj/exec";
-    let pesertaData = [];
-    let currentUser = null;
+</div>
 
-    // Ambil data siswa dari Google Script
-    async function loadUsernames() {
-      try {
-        const res = await fetch(apiUrl);
-        const json = await res.json();
-        let raw = [];
-        if (json && json.success && Array.isArray(json.data)) raw = json.data;
-        else if (Array.isArray(json)) raw = json;
+<script>
+const apiUrl = "https://script.google.com/macros/s/AKfycbwHHd6J6g0FDUTg7Q2XtJu4HUKYLBCSCKi9bhQVzW4_0gDBeseQwkoHjOKwFVhslKjj/exec";
+let pesertaData = [];
+let currentUser = null;
+let questions = [], answers = {}, flagged = {};
+let currentIndex = 0;
+let startTime, timerInterval;
 
-        pesertaData = raw.map(r => {
-          if (Array.isArray(r)) {
-            return { nama: String(r[0]||'').trim(), kelas: String(r[1]||'').trim(), jenisTes: String(r[2]||'').trim(), token: String(r[3]||'').trim() };
-          } else {
-            return { nama: String(r.nama||r.NAMA||'').trim(), kelas: String(r.kelas||r.KELAS||'').trim(), jenisTes: String(r.jenisTes||r.JENIS_TES||'').trim(), token: String(r.token||r.TOKEN||'').trim() };
-          }
-        }).filter(x => x.nama);
-
-        pesertaData.sort((a,b)=>a.nama.localeCompare(b.nama));
-        const select=document.getElementById("username");
-        select.innerHTML='<option value="">-- pilih username --</option>';
-        pesertaData.forEach(p=>{
-          const opt=document.createElement("option");
-          opt.value=p.nama;
-          opt.textContent=p.nama;
-          select.appendChild(opt);
-        });
-      } catch (e) {
-        document.getElementById("loginError").textContent = "Tidak bisa terhubung ke server.";
-      }
-    }
-
-    loadUsernames();
-
-    function login(){
-      const nama=document.getElementById("username").value;
-      const password=document.getElementById("password").value.trim();
-      const jenisTes=document.getElementById("jenisTes").value.trim();
-
-      const user=pesertaData.find(u=>u.nama===nama && u.kelas===password);
-      if(user){
-        currentUser={ nama:user.nama, kelas:user.kelas, jenisTes };
-        document.getElementById("page-login").classList.add("hidden");
-        document.getElementById("page-konfirmasi").classList.remove("hidden");
-        document.getElementById("konfNama").textContent=currentUser.nama;
-        document.getElementById("konfKelas").textContent=currentUser.kelas;
-        document.getElementById("konfTes").textContent=currentUser.jenisTes;
+// -------------------- LOGIN --------------------
+async function loadUsernames() {
+  try {
+    const res = await fetch(apiUrl);
+    const json = await res.json();
+    let raw = [];
+    if (json && json.success && Array.isArray(json.data)) raw = json.data;
+    else if (Array.isArray(json)) raw = json;
+    pesertaData = raw.map(r => {
+      if (Array.isArray(r)) {
+        return { nama: r[0], kelas: r[1], jenisTes: r[2], token: r[3] };
       } else {
-        document.getElementById("loginError").textContent="Username atau password salah.";
+        return { nama: r.nama||r.NAMA, kelas: r.kelas||r.KELAS, jenisTes: r.jenisTes||r.JENIS_TES, token: r.token||r.TOKEN };
       }
+    }).filter(x=>x.nama);
+    pesertaData.sort((a,b)=>a.nama.localeCompare(b.nama));
+    const select=document.getElementById("username");
+    select.innerHTML='<option value="">-- pilih username --</option>';
+    pesertaData.forEach(p=>{
+      const opt=document.createElement("option");
+      opt.value=p.nama; opt.textContent=p.nama; select.appendChild(opt);
+    });
+  } catch(e){ document.getElementById("loginError").textContent="Tidak bisa terhubung ke server."; }
+}
+loadUsernames();
+
+function login(){
+  const nama=document.getElementById("username").value;
+  const password=document.getElementById("password").value.trim();
+  const jenisTes=document.getElementById("jenisTes").value.trim();
+  const user=pesertaData.find(u=>u.nama===nama && u.kelas===password);
+  if(user){
+    currentUser={ nama:user.nama, kelas:user.kelas, jenisTes };
+    document.getElementById("page-login").classList.add("hidden");
+    document.getElementById("page-konfirmasi").classList.remove("hidden");
+    document.getElementById("konfNama").textContent=currentUser.nama;
+    document.getElementById("konfKelas").textContent=currentUser.kelas;
+    document.getElementById("konfTes").textContent=currentUser.jenisTes;
+  } else {
+    document.getElementById("loginError").textContent="Username atau password salah.";
+  }
+}
+
+function konfirmasiToken(){
+  const token=document.getElementById("tokenInput").value.trim();
+  const matched=pesertaData.find(u=>u.nama===currentUser.nama && u.jenisTes.toLowerCase()===currentUser.jenisTes.toLowerCase() && u.token===token);
+  if(matched){
+    currentUser.token=token;
+    document.getElementById("page-konfirmasi").classList.add("hidden");
+    document.getElementById("page-asesmen").classList.remove("hidden");
+    startAsesmen();
+  } else {
+    document.getElementById("tokenError").textContent="Token tidak cocok.";
+  }
+}
+
+// -------------------- ASESMEN --------------------
+function startAsesmen(){
+  // generate 25 soal dummy (nanti bisa diisi sesuai indikator)
+  questions = Array.from({length:25}, (_,i)=>({
+    text:`Soal ${i+1}: [contoh pertanyaan Pythagoras]`,
+    type:(i%5===0?"pgc":(i%3===0?"pg":"essay")),
+    options:["A","B","C","D"],
+    correct: (i%4)
+  }));
+  renderNav();
+  showQuestion(0);
+
+  // timer
+  let timeLeft=60*60;
+  startTime=new Date();
+  const timerEl=document.getElementById("timer");
+  timerInterval=setInterval(()=>{
+    const m=Math.floor(timeLeft/60);
+    const s=timeLeft%60;
+    timerEl.textContent=`Sisa waktu: ${m}:${s.toString().padStart(2,'0')}`;
+    if(timeLeft<=0){ clearInterval(timerInterval); submitTes(); }
+    timeLeft--;
+  },1000);
+}
+
+function renderNav(){
+  const nav=document.getElementById("nav"); nav.innerHTML="";
+  for(let i=0;i<questions.length;i++){
+    const btn=document.createElement("button");
+    btn.textContent=i+1;
+    btn.className= answers[i]?"answered":"unanswered";
+    if(flagged[i]) btn.classList.add("flagged");
+    btn.onclick=()=>showQuestion(i);
+    nav.appendChild(btn);
+  }
+}
+
+function showQuestion(i){
+  currentIndex=i;
+  const q=questions[i];
+  const area=document.getElementById("question");
+  let html=`<h3>Soal ${i+1}</h3><p>${q.text}</p>`;
+  if(q.type==="pg"||q.type==="pgc"){
+    q.options.forEach((opt,idx)=>{
+      const checked = answers[i] && answers[i].includes(idx) ? "checked":"";
+      const type = (q.type==="pgc"?"checkbox":"radio");
+      html+=`<label><input type="${type}" name="q${i}" value="${idx}" ${checked}> ${opt}</label><br>`;
+    });
+    html+=`<button onclick="saveAnswer(${i})">Simpan Jawaban</button>`;
+  } else {
+    const val=answers[i]||"";
+    html+=`<textarea id="essay${i}" rows="3" cols="40">${val}</textarea><br>`;
+    html+=`<button onclick="saveAnswer(${i})">Simpan Jawaban</button>`;
+  }
+  area.innerHTML=html;
+  renderNav();
+}
+
+function saveAnswer(i){
+  const q=questions[i];
+  if(q.type==="pg"){
+    const sel=document.querySelector(`input[name=q${i}]:checked`);
+    if(sel) answers[i]=[parseInt(sel.value)];
+  } else if(q.type==="pgc"){
+    const sel=document.querySelectorAll(`input[name=q${i}]:checked`);
+    answers[i]=Array.from(sel).map(s=>parseInt(s.value));
+  } else {
+    const val=document.getElementById(`essay${i}`).value.trim();
+    if(val) answers[i]=val;
+  }
+  renderNav();
+}
+
+function toggleFlag(){
+  flagged[currentIndex]=!flagged[currentIndex];
+  renderNav();
+}
+
+function toggleNav(){
+  const nav=document.getElementById("navContainer");
+  if(nav.style.display==="none"){ nav.style.display="block"; document.getElementById("toggleNav").textContent="Sembunyikan Navigasi"; }
+  else { nav.style.display="none"; document.getElementById("toggleNav").textContent="Tampilkan Navigasi"; }
+}
+
+// -------------------- SUBMIT --------------------
+function submitTes(){
+  clearInterval(timerInterval);
+  const endTime=new Date();
+  const durasi=Math.floor((endTime-startTime)/1000);
+
+  // skor dummy: pg & pgc dicek
+  let benar=0;
+  questions.forEach((q,i)=>{
+    if(q.type==="pg" && answers[i] && answers[i][0]===q.correct) benar++;
+    if(q.type==="pgc" && answers[i] && answers[i].length===2) benar++; // dummy rule
+    if(q.type==="essay" && answers[i]) benar++; // dummy rule
+  });
+  const score=benar*4;
+
+  const data={
+    nama: currentUser.nama,
+    kelas: currentUser.kelas,
+    jenisTes: currentUser.jenisTes,
+    token: currentUser.token,
+    score: score,
+    durasi: durasi,
+    waktuSimpan: new Date().toISOString()
+  };
+
+  document.getElementById("page-asesmen").classList.add("hidden");
+  document.getElementById("page-result").classList.remove("hidden");
+  document.getElementById("hasil").textContent=JSON.stringify(data,null,2);
+  sendData(data);
+}
+
+// -------------------- KIRIM DATA --------------------
+async function sendData(data){
+  const jsonData=JSON.stringify(data);
+  const headers={"Content-Type":"application/json"};
+  const statusEl=document.getElementById("sendStatus");
+
+  // Metode 1
+  try{
+    const res=await fetch(apiUrl,{method:"POST",headers,body:jsonData});
+    if(res.ok){
+      statusEl.textContent="✅ Data terkirim dengan Metode 1 (CORS)";
+      statusEl.style.color="green"; return;
     }
+  }catch(e){}
 
-    function konfirmasiToken(){
-      const token=document.getElementById("tokenInput").value.trim();
-      if(!token){ document.getElementById('tokenError').textContent='Token wajib diisi.'; return; }
+  // Metode 2
+  try{
+    await fetch(apiUrl,{method:"POST",mode:"no-cors",headers,body:jsonData});
+    statusEl.textContent="✅ Data terkirim dengan Metode 2 (no-cors)";
+    statusEl.style.color="orange"; return;
+  }catch(e){}
 
-      const matched=pesertaData.find(u=>u.nama===currentUser.nama && u.jenisTes.toLowerCase()===currentUser.jenisTes.toLowerCase() && u.token===token);
-
-      if(matched){
-        currentUser.token=token;
-        document.getElementById("page-konfirmasi").classList.add("hidden");
-        document.getElementById("page-asesmen").classList.remove("hidden");
-        startAsesmen();
-      } else {
-        document.getElementById("tokenError").textContent='Token tidak cocok.';
-      }
-    }
-
-    let startTime,timerInterval;
-
-    function startAsesmen(){
-      startTime=new Date();
-      let timeLeft=60*60;
-      const timerEl=document.getElementById("timer");
-      timerInterval=setInterval(()=>{
-        const m=Math.floor(timeLeft/60);
-        const s=timeLeft%60;
-        timerEl.textContent=`${m}:${s.toString().padStart(2,'0')}`;
-        if(timeLeft<=0){ clearInterval(timerInterval); submitTes(); }
-        timeLeft--;},1000);
-    }
-
-    function submitTes(){
-      clearInterval(timerInterval);
-      const endTime=new Date();
-      const durasi=Math.floor((endTime-startTime)/1000);
-      const score=0; // sementara placeholder
-      const data={
-        nama: currentUser.nama,
-        kelas: currentUser.kelas,
-        jenisTes: currentUser.jenisTes,
-        token: currentUser.token,
-        score: score,
-        durasi: durasi,
-        waktuSimpan: new Date().toISOString()
-      };
-
-      document.getElementById("page-asesmen").classList.add("hidden");
-      document.getElementById("page-result").classList.remove("hidden");
-      document.getElementById("hasil").textContent=JSON.stringify(data,null,2);
-      sendData(data);
-    }
-
-    async function sendData(data){
-      const jsonData = JSON.stringify(data);
-      const headers = { "Content-Type": "application/json" };
-      const statusEl = document.getElementById("sendStatus");
-
-      // --- METODE 1: Fetch normal dengan CORS ---
-      try {
-        console.log("🔵 [Metode 1] Fetch CORS dengan JSON...");
-        const res = await fetch(apiUrl, { method:"POST", headers, body: jsonData });
-        if (res.ok) {
-          console.log("✅ [Metode 1] Data terkirim sukses:", await res.text());
-          statusEl.textContent = "✅ Data terkirim dengan Metode 1 (CORS)";
-          statusEl.style.color = "green";
-          return;
-        } else {
-          console.warn("⚠️ [Metode 1] Response tidak OK:", res.status, res.statusText);
-        }
-      } catch (err) {
-        console.error("❌ [Metode 1] Gagal:", err);
-      }
-
-      // --- METODE 2: Fetch dengan no-cors ---
-      try {
-        console.log("🟠 [Metode 2] Fetch no-cors dengan JSON...");
-        await fetch(apiUrl, { method:"POST", mode:"no-cors", headers, body: jsonData });
-        console.log("✅ [Metode 2] Data dikirim (tidak bisa baca respons).");
-        statusEl.textContent = "✅ Data terkirim dengan Metode 2 (no-cors)";
-        statusEl.style.color = "orange";
-        return;
-      } catch (err) {
-        console.error("❌ [Metode 2] Gagal:", err);
-      }
-
-      // --- METODE 3: Form submission fallback ---
-      try {
-        console.log("🔴 [Metode 3] Form submission fallback...");
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = apiUrl;
-        form.target = "_blank";
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "data";
-        input.value = jsonData;
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-        console.log("✅ [Metode 3] Form submission dilakukan.");
-        statusEl.textContent = "✅ Data terkirim dengan Metode 3 (Form Submission)";
-        statusEl.style.color = "red";
-      } catch (err) {
-        console.error("❌ [Metode 3] Gagal:", err);
-        statusEl.textContent = "❌ Semua metode gagal mengirim data.";
-        statusEl.style.color = "darkred";
-      }
-    }
-  </script>
+  // Metode 3
+  try{
+    const form=document.createElement("form");
+    form.method="POST"; form.action=apiUrl; form.target="_blank";
+    const input=document.createElement("input");
+    input.type="hidden"; input.name="data"; input.value=jsonData;
+    form.appendChild(input); document.body.appendChild(form); form.submit(); document.body.removeChild(form);
+    statusEl.textContent="✅ Data terkirim dengan Metode 3 (Form Submission)";
+    statusEl.style.color="red";
+  }catch(e){
+    statusEl.textContent="❌ Semua metode gagal.";
+    statusEl.style.color="darkred";
+  }
+}
+</script>
 </body>
 </html>
