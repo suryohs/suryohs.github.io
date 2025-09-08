@@ -1,413 +1,176 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AssesmenSumatif - Pythagoras</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assesmen Sumatif</title>
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;padding:0;background:#f4f6f8}
-    .container{max-width:1000px;margin:24px auto;background:white;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08);overflow:hidden}
-    header{padding:18px;border-bottom:1px solid #eee}
-    main{padding:18px}
-    label{display:block;margin:8px 0 4px}
-    input,select,button,textarea{font-size:16px;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;box-sizing:border-box}
-    .row{display:flex;gap:12px}
-    .col{flex:1}
-    .hidden{display:none}
-    .grid-nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-    .qnav{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer}
-    .unanswered{background:white;border:1px solid #444}
-    .answered{background:#000;color:#fff}
-    .doubt{background:gold}
-    .sidebar{width:140px;padding:12px;border-left:1px solid #eee}
-    .layout{display:flex}
-    .question-area{flex:1;padding:12px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    .timer{font-weight:700}
-    .btn{padding:10px 14px;border-radius:8px;border:0;cursor:pointer}
-    .btn-primary{background:#0b74de;color:#fff}
-    .btn-danger{background:#e63946;color:#fff}
-    .note{font-size:13px;color:#555}
-    textarea{min-height:80px}
-    .mc-options{display:flex;flex-direction:column;gap:8px}
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    .error { color: red; }
+    .question-nav { display: grid; grid-template-columns: repeat(5, 40px); gap: 5px; margin: 10px 0; }
+    .question-nav button { width: 40px; height: 40px; }
+    .answered { background: black; color: white; }
+    .flagged { background: yellow; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header><h2>AssesmenSumatif - Pythagoras</h2></header>
-    <main>
-      <!-- PAGE: Login -->
-      <section id="page-login">
-        <h3>1. Login</h3>
-        <div id="login-status" class="note"></div>
-        <label>Username</label>
-        <select id="usernameSelect"><option value="">-- memuat... --</option></select>
-        <label>Password (isi dengan KELAS sesuai data)</label>
-        <input id="passwordInput" type="password" autocomplete="off" />
-        <label>Jenis Tes</label>
-        <select id="jenisTesSelect"><option value="AS02. PYTHAGORAS">AS02. PYTHAGORAS</option></select>
-        <div style="margin-top:12px" class="row">
-          <button id="btnLogin" class="btn btn-primary col">Login</button>
-        </div>
-      </section>
+  <!-- Halaman Login -->
+  <div id="page-login">
+    <h2>Login</h2>
+    <label>Username:</label>
+    <select id="username"></select><br><br>
+    <label>Password:</label>
+    <input type="password" id="password"><br><br>
+    <label>Jenis Tes:</label>
+    <select id="jenisTes">
+      <option value="AS02">AS02. PYTHAGORAS</option>
+    </select><br><br>
+    <button onclick="login()">Login</button>
+    <p id="loginError" class="error"></p>
+  </div>
 
-      <!-- PAGE: Konfirmasi -->
-      <section id="page-confirm" class="hidden">
-        <h3>2. Konfirmasi Mulai</h3>
-        <div><strong>Username:</strong> <span id="conf-username"></span></div>
-        <div><strong>Password (Kelas):</strong> <span id="conf-password"></span></div>
-        <div><strong>Jenis Tes:</strong> <span id="conf-jenistes"></span></div>
-        <label>Token</label>
-        <input id="tokenInput" />
-        <div style="margin-top:12px" class="row">
-          <button id="btnBackToLogin" class="btn col">Kembali</button>
-          <button id="btnStart" class="btn btn-primary col">Mulai Tes</button>
-        </div>
-        <div id="confirm-status" class="note"></div>
-      </section>
+  <!-- Halaman Konfirmasi -->
+  <div id="page-konfirmasi" class="hidden">
+    <h2>Konfirmasi Mulai Tes</h2>
+    <p>Nama: <span id="konfNama"></span></p>
+    <p>Kelas: <span id="konfKelas"></span></p>
+    <p>Jenis Tes: <span id="konfTes"></span></p>
+    <label>Token:</label>
+    <input type="text" id="tokenInput"><br><br>
+    <button onclick="konfirmasiToken()">Mulai Tes</button>
+    <p id="tokenError" class="error"></p>
+  </div>
 
-      <!-- PAGE: Assessment -->
-      <section id="page-assess" class="hidden">
-        <div class="topbar">
-          <div>
-            <strong id="ass-name"></strong> — <span id="ass-class"></span>
-          </div>
-          <div class="timer">Waktu tersisa: <span id="timeLeft">60:00</span></div>
-        </div>
-        <div class="layout">
-          <div class="question-area">
-            <div style="margin-bottom:8px"><button id="toggleNav" class="btn">Toggle Navigasi</button></div>
-            <div id="questionContainer"></div>
-          </div>
-          <aside class="sidebar">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <strong>Navigasi</strong>
-              <button id="btnFinish" class="btn btn-danger">Selesai</button>
-            </div>
-            <div id="navGrid" class="grid-nav"></div>
-            <div style="margin-top:12px" class="note">Hitam=jawab Putih=belum Kuning=ragu</div>
-          </aside>
-        </div>
-      </section>
+  <!-- Halaman Asesmen -->
+  <div id="page-asesmen" class="hidden">
+    <h2>Asesmen</h2>
+    <div id="timer"></div>
+    <div class="question-nav" id="nav"></div>
+    <div id="question"></div>
+    <button onclick="submitTes()">Selesai</button>
+  </div>
 
-      <!-- PAGE: Result -->
-      <section id="page-result" class="hidden">
-        <h3>Hasil</h3>
-        <div id="resultDisplay"></div>
-        <div id="sendStatus" class="note"></div>
-      </section>
-    </main>
+  <!-- Halaman Result -->
+  <div id="page-result" class="hidden">
+    <h2>Hasil</h2>
+    <pre id="hasil"></pre>
   </div>
 
   <script>
-  (function(){
-    // Config
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbwDeCBxqBB7o0mUxUjw7E6Kdq20A7Oegj-7nS-vEvvuBOSvstll0cy17HM2xvaU3sAj/exec';
-    const TIME_LIMIT_SEC = 60 * 60; // 60 minutes
+    const apiUrl = "https://script.google.com/macros/s/AKfycbwDeCBxqBB7o0mUxUjw7E6Kdq20A7Oegj-7nS-vEvvuBOSvstll0cy17HM2xvaU3sAj/exec";
+    let pesertaData = [];
+    let currentUser = null;
 
-    // State
-    let students = []; // from GET
-    let current = {username:'', password:'', jenisTes:'AS02. PYTHAGORAS', token:'', startTime: null, endTime:null};
-    let questions = [];
-    let answers = {}; // {index: {type:'mc'|'essay'|'mc2', value:... , doubt:false}}
-    let timerInterval = null;
-    let timeLeft = TIME_LIMIT_SEC;
-
-    // DOM
-    const usernameSelect = document.getElementById('usernameSelect');
-    const passwordInput = document.getElementById('passwordInput');
-    const jenisTesSelect = document.getElementById('jenisTesSelect');
-    const btnLogin = document.getElementById('btnLogin');
-    const loginStatus = document.getElementById('login-status');
-
-    const pageLogin = document.getElementById('page-login');
-    const pageConfirm = document.getElementById('page-confirm');
-    const pageAssess = document.getElementById('page-assess');
-    const pageResult = document.getElementById('page-result');
-
-    const confUsername = document.getElementById('conf-username');
-    const confPassword = document.getElementById('conf-password');
-    const confJenisTes = document.getElementById('conf-jenistes');
-    const tokenInput = document.getElementById('tokenInput');
-    const confirmStatus = document.getElementById('confirm-status');
-    const btnStart = document.getElementById('btnStart');
-    const btnBackToLogin = document.getElementById('btnBackToLogin');
-
-    const assName = document.getElementById('ass-name');
-    const assClass = document.getElementById('ass-class');
-    const timeLeftDom = document.getElementById('timeLeft');
-    const questionContainer = document.getElementById('questionContainer');
-    const navGrid = document.getElementById('navGrid');
-    const toggleNav = document.getElementById('toggleNav');
-    const btnFinish = document.getElementById('btnFinish');
-
-    const resultDisplay = document.getElementById('resultDisplay');
-    const sendStatus = document.getElementById('sendStatus');
-
-    // Helpers: show/hide pages
-    function showPage(p){ [pageLogin,pageConfirm,pageAssess,pageResult].forEach(x=>x.classList.add('hidden')); p.classList.remove('hidden'); }
-
-    // Fetch student data from the Apps Script (GET)
-    async function fetchStudents(){
-      try{
-        const res = await fetch(API_BASE+'?action=getStudents');
+    // Ambil data siswa dari Google Script
+    async function loadUsernames() {
+      try {
+        const res = await fetch(apiUrl);
         const json = await res.json();
-        if(json.success && json.data){
-          students = json.data.map(s => ({nama: s.nama || s[0], kelas: s.kelas || s[1], jenisTes: s.jenisTes || s[2], token: s.token || s[3]}));
+        if (json.success) {
+          pesertaData = json.data;
+          const select = document.getElementById("username");
+          select.innerHTML = "";
+          pesertaData.sort((a, b) => a.nama.localeCompare(b.nama));
+          pesertaData.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.nama;
+            opt.textContent = p.nama;
+            select.appendChild(opt);
+          });
         } else {
-          // Try to work with array response
-          students = (json.data || []).map(r=>({nama:r.nama||r[0],kelas:r.kelas||r[1],jenisTes:r.jenisTes||r[2],token:r.token||r[3]}));
+          document.getElementById("loginError").textContent = "Gagal memuat data peserta.";
         }
-      }catch(err){
-        console.warn('GET failed',err);
-        loginStatus.textContent = 'Gagal memuat data. Pastikan endpoint tersedia.';
-        students = [];
+      } catch (e) {
+        document.getElementById("loginError").textContent = "Tidak bisa terhubung ke server.";
       }
-      // Populate dropdown
-      const names = Array.from(new Set(students.map(s=>s.nama))).sort((a,b)=>a.localeCompare(b));
-      usernameSelect.innerHTML = '<option value="">-- pilih username --</option>' + names.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
     }
 
-    // Escape
-    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    loadUsernames();
 
-    // Login handler
-    btnLogin.addEventListener('click',()=>{
-      const u = usernameSelect.value; const p = passwordInput.value; const j = jenisTesSelect.value;
-      if(!u || !p) { loginStatus.textContent='Isi username dan password.'; return; }
-      // find student with nama==u and kelas==p and jenisTes==j
-      const found = students.find(s=>s.nama===u && s.kelas===p && (s.jenisTes===j || true)); // jenis tes validated later on token
-      if(!found){ loginStatus.textContent='User / password tidak cocok.'; return; }
-      // proceed
-      current.username = u; current.password = p; current.jenisTes = j;
-      confUsername.textContent = u; confPassword.textContent = p; confJenisTes.textContent = j;
-      loginStatus.textContent='';
-      showPage(pageConfirm);
-    });
+    function login() {
+      const nama = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const jenisTes = document.getElementById("jenisTes").value;
 
-    btnBackToLogin.addEventListener('click',()=>{ showPage(pageLogin); });
-
-    // Confirm start: verify token matches a student with same jenis tes
-    btnStart.addEventListener('click',()=>{
-      const tok = tokenInput.value.trim(); if(!tok){ confirmStatus.textContent='Token wajib diisi.'; return; }
-      const matched = students.find(s=>s.nama===current.username && s.token==tok && s.jenisTes===current.jenisTes);
-      if(!matched){ confirmStatus.textContent='Token tidak cocok untuk user / jenis tes.'; return; }
-      current.token = tok; confirmStatus.textContent='Token valid. Mulai tes...';
-      startAssessment();
-    });
-
-    // START ASSESSMENT: generate questions, init timer, render first question
-    function startAssessment(){
-      current.startTime = new Date();
-      current.startIso = current.startTime.toISOString();
-      questions = generatePaper(); // 25 questions generated
-      answers = {};
-      renderNav();
-      renderQuestion(0);
-      assName.textContent = current.username;
-      assClass.textContent = current.password;
-      timeLeft = TIME_LIMIT_SEC;
-      updateTimerDisplay();
-      timerInterval = setInterval(()=>{
-        timeLeft--; if(timeLeft<=0){ clearInterval(timerInterval); autoSubmit(); }
-        updateTimerDisplay();
-      },1000);
-      showPage(pageAssess);
-    }
-
-    function updateTimerDisplay(){ const mm = Math.floor(timeLeft/60); const ss = timeLeft%60; timeLeftDom.textContent = `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`; }
-
-    // NAV
-    function renderNav(){ navGrid.innerHTML=''; for(let i=0;i<25;i++){ const b = document.createElement('div'); b.className='qnav unanswered'; b.textContent = i+1; b.dataset.idx=i; b.addEventListener('click',()=>renderQuestion(i)); navGrid.appendChild(b); } }
-    toggleNav.addEventListener('click', ()=>{ navGrid.parentElement.classList.toggle('hidden'); });
-
-    function markNav(){ for(let i=0;i<25;i++){ const el = navGrid.children[i]; const a = answers[i]; el.className='qnav ' + (a ? (a.doubt ? 'doubt' : 'answered') : 'unanswered'); } }
-
-    btnFinish.addEventListener('click', ()=>{ if(confirm('Anda yakin ingin mengakhiri tes?')) finishAndSubmit(); });
-
-    // Render question area
-    function renderQuestion(i){ const q = questions[i]; questionContainer.innerHTML = '';
-      const h = document.createElement('div'); h.innerHTML = `<h4>Soal ${i+1}</h4><div>${q.text}</div>`;
-      questionContainer.appendChild(h);
-      if(q.type==='mc2'){ // multiple answer choose 2
-        const wrap = document.createElement('div'); wrap.className='mc-options'; q.options.forEach((opt,oid)=>{
-          const id = `q${i}_o${oid}`;
-          const el = document.createElement('label'); el.innerHTML = `<input type="checkbox" id="${id}"> ${escapeHtml(opt)}`;
-          wrap.appendChild(el);
-        });
-        questionContainer.appendChild(wrap);
-      } else if(q.type==='mc'){ const wrap = document.createElement('div'); wrap.className='mc-options'; q.options.forEach((opt,oid)=>{
-        const id = `q${i}_r${oid}`;
-        const el = document.createElement('label'); el.innerHTML = `<input name="q${i}" type="radio" id="${id}"> ${escapeHtml(opt)}`;
-        wrap.appendChild(el);
-      }); questionContainer.appendChild(wrap);
-      } else { // essay
-        const ta = document.createElement('input'); ta.type='text'; ta.id = `q${i}_essay`; ta.placeholder='Masukkan jawaban (angka atau desimal)'; questionContainer.appendChild(ta);
+      const user = pesertaData.find(u => u.nama === nama && u.kelas === password);
+      if (user) {
+        currentUser = { nama, kelas: password, jenisTes };
+        document.getElementById("page-login").classList.add("hidden");
+        document.getElementById("page-konfirmasi").classList.remove("hidden");
+        document.getElementById("konfNama").textContent = nama;
+        document.getElementById("konfKelas").textContent = password;
+        document.getElementById("konfTes").textContent = jenisTes;
+      } else {
+        document.getElementById("loginError").textContent = "Username atau password salah.";
       }
-      // doubt checkbox
-      const doubtLabel = document.createElement('label'); doubtLabel.style.display='block'; doubtLabel.style.marginTop='10px'; doubtLabel.innerHTML = `<input type="checkbox" id="q${i}_doubt"> Tandai ragu-ragu`;
-      questionContainer.appendChild(doubtLabel);
-
-      // save & next
-      const btnSave = document.createElement('div'); btnSave.style.marginTop='12px';
-      btnSave.innerHTML = `<div class="row"><button class="btn col" id="savePrev">Simpan & Sebelumnya</button><button class="btn btn-primary col" id="saveNext">Simpan & Berikutnya</button></div>`;
-      questionContainer.appendChild(btnSave);
-
-      // restore if exists
-      const existing = answers[i];
-      if(existing){ if(existing.type==='mc2'){ existing.value.forEach(v=>{ const cb = document.getElementById(`q${i}_o${v}`); if(cb) cb.checked = true; }); } else if(existing.type==='mc'){ if(existing.value!=null){ const rd = document.getElementById(`q${i}_r${existing.value}`); if(rd) rd.checked=true; } } else { const inp = document.getElementById(`q${i}_essay`); if(inp) inp.value = existing.value; } document.getElementById(`q${i}_doubt`).checked = !!existing.doubt; }
-
-      document.getElementById('saveNext').addEventListener('click', ()=>{ saveAnswer(i); renderQuestion((i+1)%25); });
-      document.getElementById('savePrev').addEventListener('click', ()=>{ saveAnswer(i); renderQuestion((i+24)%25); });
-      markNav();
     }
 
-    function saveAnswer(i){ const q = questions[i]; let entry = {type:q.type, doubt:false, value:null}; if(q.type==='mc2'){ const vals=[]; q.options.forEach((_,oid)=>{ const cb = document.getElementById(`q${i}_o${oid}`); if(cb && cb.checked) vals.push(oid); }); entry.value = vals; } else if(q.type==='mc'){ for(let oid=0;oid<q.options.length;oid++){ const rd = document.getElementById(`q${i}_r${oid}`); if(rd && rd.checked) { entry.value = oid; break; } } } else { const inp = document.getElementById(`q${i}_essay`); entry.value = inp ? inp.value.trim() : ''; }
-      const dcb = document.getElementById(`q${i}_doubt`); entry.doubt = !!(dcb && dcb.checked);
-      answers[i]=entry; markNav();
+    function konfirmasiToken() {
+      const token = document.getElementById("tokenInput").value;
+      const user = pesertaData.find(u => u.nama === currentUser.nama && u.token === token && u.jenisTes === currentUser.jenisTes);
+      if (user) {
+        currentUser.token = token;
+        document.getElementById("page-konfirmasi").classList.add("hidden");
+        document.getElementById("page-asesmen").classList.remove("hidden");
+        startAsesmen();
+      } else {
+        document.getElementById("tokenError").textContent = "Token tidak sesuai.";
+      }
     }
 
-    // Auto submit
-    function autoSubmit(){ alert('Waktu habis. Hasil akan disimpan.'); finishAndSubmit(); }
+    let startTime;
+    let timerInterval;
 
-    // finish and compute score, duration, send to server
-    function finishAndSubmit(){ clearInterval(timerInterval); current.endTime = new Date(); current.durationSec = Math.round((current.endTime - current.startTime)/1000);
-      // compute score
-      // score per question: if correct => +4, else 0
-      let correctCount = 0;
-      for(let i=0;i<25;i++){ const q = questions[i]; const a = answers[i]; if(checkCorrect(q,a)) correctCount++; }
-      const score = correctCount * 4;
-      current.score = score;
-      const duration = current.durationSec; const waktuSimpan = new Date().toISOString();
-      // Prepare payload
-      const payload = {
-        NAMA: current.username,
-        KELAS: current.password,
-        JENIS_TES: current.jenisTes,
-        TOKEN: current.token,
+    function startAsesmen() {
+      startTime = new Date();
+      let timeLeft = 60 * 60;
+      const timerEl = document.getElementById("timer");
+      timerInterval = setInterval(() => {
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        timerEl.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          submitTes();
+        }
+        timeLeft--;
+      }, 1000);
+    }
+
+    function submitTes() {
+      clearInterval(timerInterval);
+      const endTime = new Date();
+      const durasi = Math.floor((endTime - startTime) / 1000);
+      const score = 100; // placeholder
+      const data = {
+        NAMA: currentUser.nama,
+        KELAS: currentUser.kelas,
+        JENIS_TES: currentUser.jenisTes,
+        TOKEN: currentUser.token,
         SCORE: score,
-        DURASI: duration,
-        WAKTU_SIMPAN: waktuSimpan
+        DURASI: durasi,
+        WAKTU_SIMPAN: new Date().toISOString()
       };
-      // show result
-      resultDisplay.innerHTML = `<p><strong>NAMA:</strong> ${escapeHtml(payload.NAMA)}</p><p><strong>KELAS:</strong> ${escapeHtml(payload.KELAS)}</p><p><strong>JENIS_TES:</strong> ${escapeHtml(payload.JENIS_TES)}</p><p><strong>TOKEN:</strong> ${escapeHtml(payload.TOKEN)}</p><p><strong>SCORE:</strong> ${payload.SCORE}</p><p><strong>DURASI (detik):</strong> ${payload.DURASI}</p><p><strong>WAKTU_SIMPAN:</strong> ${payload.WAKTU_SIMPAN}</p>`;
-      showPage(pageResult);
-      // send to server with 3 methods fallback
-      sendPayloadToServer(payload);
+
+      document.getElementById("page-asesmen").classList.add("hidden");
+      document.getElementById("page-result").classList.remove("hidden");
+      document.getElementById("hasil").textContent = JSON.stringify(data, null, 2);
+
+      sendData(data);
     }
 
-    // Check correctness
-    function checkCorrect(q,a){ if(!a) return false; if(q.type==='mc'){ return a.value===q.answer; } else if(q.type==='mc2'){ // must select exactly correct set, and not include wrong ones
-        if(!Array.isArray(a.value)) return false; const selected = a.value.slice().sort(); const correct = q.answer.slice().sort(); return JSON.stringify(selected)===JSON.stringify(correct);
-      } else { // essay numeric
-        // allow tolerance if q.tolerance provided
-        const val = Number(String(a.value).replace(',','.'));
-        if(isNaN(val)) return false;
-        if(q.tolerance!=null) return Math.abs(val - q.answer) <= q.tolerance;
-        return Math.abs(val - q.answer) < 1e-6;
-      } }
-
-    // Send payload with method 1 -> 2 -> 3
-    async function sendPayloadToServer(payload){ sendStatus.textContent = 'Mengirim hasil...';
-      // Method 1: CORS fetch JSON
-      try{
-        const r1 = await fetch(API_BASE, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-        const j1 = await r1.json(); if(j1 && j1.success){ sendStatus.textContent = 'Terkirim (metode CORS JSON).'; return; }
-      }catch(err){ console.warn('met1',err); }
-      // Method 2: no-cors (fire-and-forget)
-      try{
-        await fetch(API_BASE, {method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-        sendStatus.textContent = 'Permintaan dikirim (no-cors). Jika endpoint menerima, data masuk.'; return;
-      }catch(err){ console.warn('met2',err); }
-      // Method 3: form POST via iframe
-      try{
-        const form = document.createElement('form'); form.method='POST'; form.action=API_BASE; form.style.display='none';
-        for(const k in payload){ const inp = document.createElement('input'); inp.name=k; inp.value=payload[k]; form.appendChild(inp); }
-        document.body.appendChild(form); form.submit(); document.body.removeChild(form);
-        sendStatus.textContent = 'Terkirim via form POST.'; return;
-      }catch(err){ console.warn('met3',err); sendStatus.textContent = 'Gagal mengirim hasil. Simpan lokal dan coba ulang.'; }
+    async function sendData(data) {
+      try {
+        await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+      } catch (e) {
+        console.error("Gagal kirim data", e);
+      }
     }
-
-    // === QUESTION GENERATION ===
-    // We create generators for each indicator. For each indicator we produce 10 variants and pick 1.
-
-    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
-
-    // utility to choose multiples of base triple
-    function makeTriple(base, multiplier){ return base.map(x=>x*multiplier); }
-
-    function randFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-    // Basic generators
-    const generators = [];
-
-    // 1. Identifikasi segitiga siku-siku (pilih 2 dari 4 yang benar)
-    generators.push(function(){
-      // create 4 triangles (triples), pick 2 correct
-      const base = [ [3,4,5],[5,12,13],[7,24,25],[8,15,17],[9,40,41],[20,21,29] ];
-      const corrects = shuffle(base).slice(0,2).map(t=>`${t[0]}, ${t[1]}, ${t[2]}`);
-      const wrong = shuffle(base).slice(2,4).map(t=>`${t[0]+1}, ${t[1]}, ${t[2]}`); // slightly wrong
-      const opts = shuffle(corrects.concat(wrong));
-      return {type:'mc2', text:'Diberikan empat ukuran segitiga berikut. Pilih tepat 2 yang merupakan segitiga siku-siku (pilih 2 jawaban benar).', options:opts, answer: [opts.indexOf(corrects[0]), opts.indexOf(corrects[1])] };
-    });
-
-    // then many essay-type generators for different triplets and multipliers
-    const tripleSets = [[3,4,5],[5,12,13],[7,24,25],[8,15,17],[9,40,41],[20,21,29]];
-    const multipliers = [0.5,0.2,1,2,3,4,5,6,7,8];
-
-    tripleSets.forEach(base=>{
-      // find hypotenuse given two legs
-      generators.push(function(){ const m=randFrom(multipliers); const t=makeTriple(base,m); const a=t[0], b=t[1], c=t[2]; // generate order
-        return {type:'essay', text:`Gunakan teorema Pythagoras untuk mencari panjang sisi miring jika dua sisi siku-siku diketahui: salah satu sisi ${a} dan sisi lainnya ${b}. Jawaban dalam angka (boleh desimal jika perlu).`, answer: c, tolerance: 1e-6 };
-      });
-      // find one leg given hypotenuse and the other leg
-      generators.push(function(){ const m=randFrom(multipliers); const t=makeTriple(base,m); const a=t[0], b=t[1], c=t[2]; return {type:'essay', text:`Gunakan teorema Pythagoras untuk mencari panjang salah satu sisi tegak jika sisi miring dan satu sisi lainnya diketahui: sisi miring ${c} dan sisi tegak ${a}. Jawaban dalam angka.`, answer: b, tolerance:1e-6}; });
-    });
-
-    // Non-triplet hypotenuse/leg (round to 1 decimal) - two generators
-    generators.push(function(){ const a = Math.floor(Math.random()*10)+5; const b = Math.floor(Math.random()*10)+6; const c = Math.sqrt(a*a + b*b); return {type:'essay', text:`Cari panjang sisi miring jika dua sisi siku-siku diketahui: ${a} dan ${b}. (Pendekatan 1 angka desimal)`, answer: Math.round(c*10)/10, tolerance:0.15}; });
-    generators.push(function(){ const c = Math.floor(Math.random()*10)+10; const a = Math.floor(Math.random()* (c-3))+1; const b = Math.sqrt(c*c - a*a); return {type:'essay', text:`Cari panjang salah satu sisi tegak jika sisi miring ${c} dan satu sisi tegak ${a}. (Pendekatan 1 angka desimal)`, answer: Math.round(b*10)/10, tolerance:0.15}; });
-
-    // contextual problems (integer, use triples)
-    generators.push(function(){ const base = randFrom(tripleSets); const m = randFrom([1,2,3,4]); const t = makeTriple(base,m); const ladder = t[0], wall = t[1]; return {type:'essay', text:`Sebuah tangga bersandar sehingga membentuk segitiga siku-siku. Panjang tangga ${t[2]} dan jarak kaki tangga ke dinding ${ladder}. Berapa tinggi yang dicapai tangga? (jawaban bilangan bulat)`, answer: wall, tolerance:0.5}; });
-
-    // diagonal persegi panjang / bujur sangkar (MC with root form)
-    generators.push(function(){ const a = randFrom([3,4,5,6,7]); const b = randFrom([3,4,5,6,7]); const diag = Math.sqrt(a*a + b*b); const options = shuffle([`\u221A(${a*a}+${b*b})`, diag.toFixed(1), (Math.round(diag)).toString(), `\u221A(${(a*a+b*b)})`]); return {type:'mc', text:`Hitung diagonal sebuah persegi panjang dengan sisi ${a} dan ${b}. Pilih jawaban yang benar (bentuk akar diperbolehkan).`, options:options, answer: options.indexOf(`\u221A(${a*a}+${b*b})`)}; });
-
-    // height of equilateral triangle using Pythagoras (MC with root)
-    generators.push(function(){ const s = randFrom([4,6,8,10]); const h = `\u221A(${s*s} - (${s}/2)*(${s}/2))`; const options = shuffle([h, (Math.sqrt(s*s - (s/2)*(s/2))).toFixed(2), (s).toString(), `\u221A(${s*s - 1})`]); return {type:'mc', text:`Tentukan tinggi segitiga sama sisi dengan sisi ${s}. Pilih jawaban bentuk akar jika diperlukan.`, options:options, answer: options.indexOf(h)}; });
-
-    // angle 30 degree: hypotenuse from side and 30deg (use sin/cos 30 = 0.5, sqrt3/2 ~0.866)
-    generators.push(function(){ const side = randFrom([4,6,8,10]); const hyp = side / Math.sin(Math.PI/6); const val = Math.round(hyp*10)/10; return {type:'essay', text:`Satu sisi dan sudut 30\u00B0 diketahui pada gambar. Jika sisi dekat sudut 30\u00B0 adalah ${side}, tentukan panjang sisi miring (pendekatan 1 desimal).`, answer: val, tolerance:0.15}; });
-
-    // angle 45 degree: leg from hypotenuse: leg = hyp / sqrt(2)
-    generators.push(function(){ const hyp = randFrom([5,7,9,11]); const leg = Math.round((hyp/Math.SQRT2)*10)/10; return {type:'essay', text:`Jika sisi miring adalah ${hyp} dan sudut 45\u00B0 diketahui, cari panjang salah satu sisi tegak (pendekatan 1 angka desimal).`, answer: leg, tolerance:0.15}; });
-
-    // combined shapes, two-step pythagoras
-    generators.push(function(){ const base = randFrom(tripleSets); const m = randFrom([1,2,3]); const t=makeTriple(base,m); // construct a two-step
-      const a=t[0], b=t[1], c=t[2]; const extra = b; const step1 = Math.sqrt(c*c - extra*extra); // contrive
-      return {type:'mc', text:`Sebuah bangun gabungan menghasilkan segitiga siku-siku dua langkah. (simulasi) Pilih jawaban yang sesuai.`, options: shuffle([String(a), String(b), String(c), String(Math.round(step1))]), answer:0};
-    });
-
-    // Story problems medium two uses (essay)
-    generators.push(function(){ const base = randFrom(tripleSets); const m=randFrom([1,2]); const t=makeTriple(base,m); // craft two-step
-      const a=t[0], b=t[1], c=t[2]; const res = b + a; return {type:'essay', text:`Atap rumah: jarak vertikal ditentukan oleh dua kali penggunaan Pythagoras (soal sederhana). Hasilkan angka bulat. (simulasi)`, answer: res, tolerance:0.5};
-    });
-
-    // Fill up to at least 30 generators (we will sample 25 randomly)
-    while(generators.length < 35){ generators.push(function(){ const a=Math.floor(Math.random()*10)+3; const b=Math.floor(Math.random()*10)+4; const c=Math.round(Math.sqrt(a*a+b*b)*10)/10; return {type:'essay', text:`Soal tambahan: cari sisi miring dari ${a} dan ${b} (1 desimal).`, answer:c, tolerance:0.15}; }); }
-
-    function generatePaper(){ // pick 25 generators with variety
-      const pick = shuffle(generators.slice()).slice(0,25);
-      return pick.map(g=>g());
-    }
-
-    // INIT
-    fetchStudents();
-
-    // expose for debugging
-    window._ASS = {questions, answers, generatePaper};
-  })();
   </script>
 </body>
 </html>
