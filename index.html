@@ -2,138 +2,693 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hello World – Input Nama</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AssesmenSumatif – Pythagoras</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --panel: #111827cc;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
-      --accent: #22c55e;
-      --ring: #3b82f6;
+    :root{
+      --bg:#0f172a;           /* slate-900 */
+      --card:#111827;         /* gray-900 */
+      --muted:#1f2937;        /* gray-800 */
+      --text:#e5e7eb;         /* gray-200 */
+      --text-dim:#cbd5e1;     /* slate-300 */
+      --accent:#22d3ee;       /* cyan-400 */
+      --accent-2:#a78bfa;     /* violet-400 */
+      --danger:#ef4444;       /* red-500 */
+      --success:#22c55e;      /* green-500 */
+      --warn:#f59e0b;         /* amber-500 */
+      --black:#000;           /* for nav status */
+      --white:#fff;
     }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
-      background: radial-gradient(1000px 800px at 50% -10%, #1f2937 0%, var(--bg) 60%);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:linear-gradient(135deg, #0b1024, #111827 60%, #0b1024);
+      color:var(--text); font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
     }
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    .card{background:rgba(17,24,39,.9); border:1px solid #243244; border-radius:20px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    h1,h2,h3{margin:0 0 12px}
+    h1{font-size:26px}
+    label{display:block;margin:10px 0 6px;color:var(--text-dim)}
+    select,input[type="text"],input[type="password"],input[type="number"]{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:var(--text)}
+    button{cursor:pointer;border:none;border-radius:14px;padding:10px 16px;color:#081018;background:linear-gradient(135deg,var(--accent),var(--accent-2));font-weight:700}
+    button.secondary{background:#0b1220;color:var(--text);border:1px solid #263244}
+    button.warn{background:var(--warn);color:#1b1200}
+    .row{display:grid;gap:16px}
+    .grid-2{grid-template-columns:1fr 1fr}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .error{background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.5); color:#fecaca; padding:10px 12px; border-radius:12px; margin:10px 0}
+    .ok{background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.5); color:#bbf7d0; padding:10px 12px; border-radius:12px; margin:10px 0}
 
-    header {
-      padding: 16px 20px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
-      background: linear-gradient(180deg, #111827aa, #11182766);
-      backdrop-filter: blur(6px);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
+    /* assessment layout */
+    .layout{display:grid; grid-template-columns:260px 1fr; gap:16px}
+    .layout.collapsed{grid-template-columns:0 1fr}
+    .side{background:rgba(2,6,23,.5); border:1px solid #243244; border-radius:16px; padding:14px; overflow:auto; transition:width .2s ease}
+    .side h3{font-size:16px; color:var(--text-dim)}
+    .toggle-nav{margin-bottom:10px}
+    .navgrid{display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin:10px 0}
+    .cell{aspect-ratio:1/1; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; border:1px solid #334155; user-select:none}
+    .cell.white{background:var(--white); color:#000}
+    .cell.black{background:var(--black); color:#fff}
+    .cell.yellow{background:var(--warn); color:#1b1200}
+    .cell.disabled{opacity:.35}
 
-    h1 { font-size: clamp(16px, 2.8vw, 22px); font-weight: 600; margin: 0 8px 0 0; color: var(--muted); }
-    .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-
-    input[type="text"] {
-      height: 40px;
-      padding: 0 12px;
-      border-radius: 12px;
-      border: 1px solid #334155;
-      background: #0b1220;
-      color: var(--text);
-      outline: none;
-      min-width: min(520px, 80vw);
-    }
-    input[type="text"]:focus { box-shadow: 0 0 0 3px #3b82f633; border-color: var(--ring); }
-
-    button {
-      height: 40px;
-      padding: 0 16px;
-      border: none;
-      border-radius: 12px;
-      background: var(--accent);
-      color: #052e16;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform .05s ease, box-shadow .2s ease, background .2s ease;
-      box-shadow: 0 8px 20px #22c55e33;
-    }
-    button:hover { filter: brightness(1.05); }
-    button:active { transform: translateY(1px); }
-
-    main { flex: 1; display: grid; place-items: center; padding: 24px; }
-
-    .name-display {
-      text-align: center;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      font-weight: 800;
-      font-size: clamp(32px, 10vw, 128px);
-      text-shadow: 0 6px 30px #22c55e22, 0 2px 12px #0008;
-      max-width: 90vw;
-      word-break: break-word;
-    }
-
-    .placeholder { color: var(--muted); font-weight: 500; font-size: clamp(18px, 3.5vw, 28px); }
-    footer { padding: 10px 16px; color: #64748b; font-size: 12px; text-align: center; }
+    .question{background:rgba(2,6,23,.5); border:1px solid #243244; border-radius:16px; padding:16px}
+    .qhead{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .meta{font-size:14px;color:var(--text-dim)}
+    .timer{font-weight:800; letter-spacing:.5px}
+    .answers{margin-top:10px}
+    .answers .row{gap:8px}
+    .flag{display:flex; align-items:center; gap:8px; margin-top:8px; color:#fde68a}
+    .actions{margin-top:12px; display:flex; gap:8px; flex-wrap:wrap}
+    .muted{color:var(--text-dim); font-size:13px}
+    .center{text-align:center}
+    .hidden{display:none}
+    .footer{margin-top:18px; font-size:12px; color:#94a3b8}
+    .kbd{border:1px solid #334155; background:#0b1220; padding:1px 6px; border-radius:6px; font-weight:700}
   </style>
 </head>
 <body>
-  <header>
-    <h1>Hello, World!</h1>
-    <div class="controls">
-      <input id="nama" type="text" placeholder="Ketik nama Anda…" autocomplete="off" />
-      <button id="tampil" type="button">Tampilkan</button>
-      <button id="bersih" type="button">Bersihkan</button>
-      <button id="profil" type="button">Halaman Profil</button>
+<div class="container">
+  <div id="screen-login" class="card">
+    <h1>Assesmen Sumatif – Pythagoras</h1>
+    <p class="muted">Masuk untuk memulai asesmen. Data akan disimpan ke spreadsheet melalui API yang disediakan.</p>
+    <div id="login-error" class="error hidden"></div>
+    <div class="row grid-2">
+      <div>
+        <label for="username">Username (diambil dari kolom 1)</label>
+        <select id="username"></select>
+      </div>
+      <div>
+        <label for="password">Password (cocokkan dengan kolom 2)</label>
+        <input id="password" type="password" placeholder="Masukkan password" />
+      </div>
+      <div>
+        <label for="jenisTes">Jenis Tes</label>
+        <select id="jenisTes">
+          <option>AS02. PYTHAGORAS</option>
+        </select>
+      </div>
     </div>
-  </header>
+    <div class="actions">
+      <button id="btn-login">Login</button>
+      <button class="secondary" id="btn-reload">Muat Ulang Data Peserta</button>
+    </div>
+    <div class="footer">Tidak ada mode demo. Jika API gagal, Anda akan melihat pesan error dan tidak dapat lanjut.</div>
+  </div>
 
-  <main>
-    <div id="output" class="name-display placeholder">Nama Anda akan muncul besar di sini</div>
-  </main>
+  <div id="screen-confirm" class="card hidden">
+    <h2>Konfirmasi Mulai</h2>
+    <div id="confirm-error" class="error hidden"></div>
+    <div class="row grid-3">
+      <div>
+        <label>Username</label>
+        <div id="c-username" class="ok"></div>
+      </div>
+      <div>
+        <label>Password</label>
+        <div id="c-password" class="ok"></div>
+      </div>
+      <div>
+        <label>Jenis Tes</label>
+        <div id="c-jenis" class="ok"></div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <label for="token">Token (cocokkan dengan kolom 4 untuk JENIS_TES pada kolom 3)</label>
+      <input id="token" type="text" placeholder="Masukkan TOKEN" />
+    </div>
+    <div class="actions">
+      <button id="btn-start">Mulai Tes</button>
+      <button class="secondary" id="btn-back-login">Kembali</button>
+    </div>
+  </div>
 
-  <footer>
-    Dibuat sederhana: ketik nama lalu klik <b>Tampilkan</b> atau tekan <b>Enter</b>.
-  </footer>
+  <div id="screen-assess" class="card hidden">
+    <div class="qhead">
+      <h2>Asesmen – Pythagoras</h2>
+      <div>
+        <span class="meta">Sisa waktu: </span>
+        <span id="timer" class="timer">60:00</span>
+      </div>
+    </div>
+    <div class="layout" id="layout">
+      <div class="side" id="sidenav">
+        <div class="toggle-nav"><button class="secondary" id="btn-toggle-nav">Hide/Unhide Navigasi</button></div>
+        <h3>Navigasi Soal (klik nomor)</h3>
+        <div id="navgrid" class="navgrid"></div>
+        <div class="actions" style="margin-top:10px">
+          <button class="warn" id="btn-finish">Selesai</button>
+        </div>
+        <p class="footer">Warna: <span class="kbd">Putih</span> belum dijawab, <span class="kbd">Hitam</span> dijawab, <span class="kbd" style="background:var(--warn);color:#1b1200">Kuning</span> ragu-ragu.</p>
+      </div>
+      <div>
+        <div class="question">
+          <div class="meta" id="q-meta"></div>
+          <div id="q-text" style="margin-top:8px"></div>
+          <div id="q-inputs" class="answers"></div>
+          <label class="flag"><input type="checkbox" id="flag"> Tandai ragu-ragu</label>
+          <div class="actions">
+            <button class="secondary" id="btn-prev">Sebelumnya</button>
+            <button class="secondary" id="btn-next">Berikutnya</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <script>
-    const input = document.getElementById('nama');
-    const out   = document.getElementById('output');
-    const show  = document.getElementById('tampil');
-    const clear = document.getElementById('bersih');
-    const profil = document.getElementById('profil');
+  <div id="screen-result" class="card hidden">
+    <h2>Hasil</h2>
+    <div id="result-fields"></div>
+    <div id="result-status" class="ok" style="margin-top:10px">Mengirim ke spreadsheet...</div>
+    <div class="actions" style="margin-top:12px">
+      <button id="btn-restart">Kembali ke Login</button>
+    </div>
+  </div>
+</div>
 
-    function render() {
-      const v = input.value.trim();
-      if (v.length === 0) {
-        out.textContent = 'Nama Anda akan muncul besar di sini';
-        out.classList.add('placeholder');
-      } else {
-        out.textContent = v;
-        out.classList.remove('placeholder');
-      }
+<script>
+(function(){
+  // ====== KONFIGURASI API ======
+  const API_BASE = 'https://script.google.com/macros/s/AKfycbwDeCBxqBB7o0mUxUjw7E6Kdq20A7Oegj-7nS-vEvvuBOSvstll0cy17HM2xvaU3sAj/exec';
+
+  // ====== STATE APP ======
+  const state = {
+    peserta: [],               // dari GET API
+    user: null,                // {nama, kelas, jenisTes, token}
+    chosenJenisTes: 'AS02. PYTHAGORAS',
+    tokenInput: '',
+    startedAt: null,           // Date saat masuk halaman 3
+    finishedAt: null,          // Date saat masuk halaman 4
+    durationSec: 0,
+    timer: null,
+    timeLeft: 60 * 60,         // 60 menit
+    questions: [],             // 20 soal
+    answers: {},               // key: index -> jawaban
+    flags: {},                 // ragu-ragu
+    score: 0
+  };
+
+  // ====== UTIL ======
+  const $ = sel => document.querySelector(sel);
+  const show = (id, flag) => { const el = $(id); if(!el) return; el.classList.toggle('hidden', !flag); };
+  const text = (id, t) => { const el = $(id); if(el) el.textContent = t; };
+  const html = (id, h) => { const el = $(id); if(el) el.innerHTML = h; };
+  const formatTime = s => {
+    const m = Math.floor(s/60), ss = s%60; return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  };
+  const nowLocalISO = () => new Date().toLocaleString('sv-SE', { hour12:false }); // YYYY-MM-DD HH:mm:ss
+
+  // ====== HALAMAN ======
+  const screens = {
+    login: '#screen-login',
+    confirm: '#screen-confirm',
+    assess: '#screen-assess',
+    result: '#screen-result'
+  };
+  function goto(name){
+    for(const k in screens) show(screens[k], k===name);
+  }
+
+  // ====== API ======
+  async function fetchPeserta(){
+    const res = await fetch(API_BASE, {method:'GET'});
+    if(!res.ok) throw new Error('Gagal memuat data peserta dari API');
+    const js = await res.json();
+    if(!js.success) throw new Error(js.error || 'Respon API tidak sukses');
+    return js.data || [];
+  }
+  async function postResult(payload){
+    const res = await fetch(API_BASE, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    const js = await res.json().catch(()=>({success:false,error:'Respon bukan JSON'}));
+    return js;
+  }
+
+  // ====== LOGIN ======
+  const usernameSel = $('#username');
+  const passwordInp = $('#password');
+  const jenisSel = $('#jenisTes');
+  const loginErr = $('#login-error');
+
+  async function populateUsers(){
+    loginErr.classList.add('hidden');
+    html('#username', '<option>Memuat...</option>');
+    try{
+      const data = await fetchPeserta();
+      // sort by nama (kolom 1)
+      data.sort((a,b)=> String(a.nama||'').localeCompare(String(b.nama||'')));
+      state.peserta = data;
+      html('#username', data.map(d=>`<option value="${encodeURIComponent(d.nama)}">${d.nama}</option>`).join(''));
+    }catch(err){
+      loginErr.textContent = err.message || 'Gagal memuat data.';
+      loginErr.classList.remove('hidden');
+      html('#username','');
+    }
+  }
+
+  $('#btn-reload').addEventListener('click', populateUsers);
+
+  $('#btn-login').addEventListener('click', ()=>{
+    const nama = decodeURIComponent(usernameSel.value||'');
+    const pass = passwordInp.value.trim();
+    const jenis = jenisSel.value;
+
+    if(!nama || !pass){
+      loginErr.textContent = 'Username dan Password wajib diisi.';
+      loginErr.classList.remove('hidden');
+      return;
+    }
+    const user = state.peserta.find(p=>p.nama===nama);
+    if(!user){
+      loginErr.textContent = 'Username tidak ditemukan di daftar peserta.';
+      loginErr.classList.remove('hidden');
+      return;
+    }
+    // Password = kolom kedua (kelas) sesuai instruksi
+    if(String(user.kelas).trim() !== pass){
+      loginErr.textContent = 'Password tidak cocok.';
+      loginErr.classList.remove('hidden');
+      return;
+    }
+    state.user = user;
+    state.chosenJenisTes = jenis;
+    // lanjut ke konfirmasi
+    html('#c-username', nama);
+    html('#c-password', pass);
+    html('#c-jenis', jenis);
+    $('#token').value = '';
+    $('#confirm-error').classList.add('hidden');
+    goto('confirm');
+  });
+
+  $('#btn-back-login').addEventListener('click', ()=> goto('login'));
+
+  // ====== KONFIRMASI MULAI ======
+  $('#btn-start').addEventListener('click', ()=>{
+    const token = ($('#token').value||'').trim();
+    const { user, chosenJenisTes } = state;
+    const errEl = $('#confirm-error');
+    if(!token){ errEl.textContent = 'TOKEN wajib diisi.'; errEl.classList.remove('hidden'); return; }
+
+    // Validasi: JENIS_TES (kolom 3) & TOKEN (kolom 4)
+    if(String(user.jenisTes).trim() !== String(chosenJenisTes).trim()){
+      errEl.textContent = 'Jenis tes tidak sesuai dengan data peserta (kolom 3).';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if(String(user.token).trim() !== token){
+      errEl.textContent = 'TOKEN tidak cocok dengan data peserta (kolom 4).';
+      errEl.classList.remove('hidden');
+      return;
     }
 
-    show.addEventListener('click', render);
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); render(); } });
-    clear.addEventListener('click', () => { input.value = ''; render(); input.focus(); });
+    state.tokenInput = token;
+    startAssessment();
+  });
 
-    profil.addEventListener('click', () => {
-      const v = encodeURIComponent(input.value.trim());
-      window.location.href = `profil.html?nama=${v}`;
+  // ====== GENERATOR SOAL PYTHAGORAS ======
+  // Tipe: 'mcq' (single), 'mcqx2' (pilihan ganda kompleks 2 jawaban), 'essay-int', 'essay-dec1'
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+  function near(a,b,tol=1e-9){ return Math.abs(a-b) <= tol; }
+  function dec1Equal(a,b){ return Math.abs(a-b) <= 0.05; } // toleransi 0.05 agar pembulatan 1 desimal aman
+
+  // Helper untuk membuat opsi pilihan ganda mengelilingi jawaban benar
+  function makeOptions(correct, spread=[-4,-2,-1,1,2,4]){
+    const base = new Set([correct]);
+    const opts = [correct];
+    for(const s of spread){
+      let v = correct + s;
+      if(v<=0) v = correct + Math.abs(s) + 1;
+      if(!base.has(v)){ base.add(v); opts.push(v); }
+      if(opts.length>=4) break;
+    }
+    return shuffle(opts).slice(0,4);
+  }
+
+  // 1) Identifikasi segitiga siku-siku (pilih 2 benar dari 4)
+  function genInd1(){
+    // buat 4 tripel acak; 2 benar (pythagoras), 2 salah
+    function randInt(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+    const triplesTrue = [];
+    while(triplesTrue.length<2){
+      // ambil pythagorean triple kecil lalu skala
+      const seeds = [[3,4,5],[5,12,13],[8,15,17],[7,24,25],[9,40,41]];
+      const [a,b,c]=seeds[randInt(0,seeds.length-1)];
+      const k = randInt(1,4);
+      triplesTrue.push([a*k,b*k,c*k]);
+    }
+    const triplesFalse = [];
+    while(triplesFalse.length<2){
+      const a=randInt(3,20), b=randInt(3,20), c=randInt(5,30);
+      if(a*a + b*b !== c*c) triplesFalse.push([a,b,c]);
+    }
+    const all = shuffle([...triplesTrue,...triplesFalse]).map(t=>`${t[0]}, ${t[1]}, ${t[2]}`);
+    const correctIdx = all.map((s,idx)=>{
+      const [a,b,c]=s.split(',').map(Number);
+      return (a*a + b*b === c*c) ? idx : -1;
+    }).filter(i=>i>=0);
+    return {
+      type:'mcqx2',
+      text:'Dari 4 ukuran sisi segitiga berikut, pilih <b>2</b> yang merupakan segitiga siku-siku (a,b adalah sisi tegak, c sisi miring).',
+      options: all,
+      correct: new Set(correctIdx)
+    };
+  }
+
+  // 2)–20) Berbagai essay (int/dec1) & MCQ
+  function randInt(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+  function round1(x){ return Math.round(x*10)/10; }
+
+  // Essay helper creators
+  function essayHypotenuseInt(){
+    const a = randInt(3,20), b = randInt(4,20);
+    const c = Math.sqrt(a*a+b*b);
+    const ci = Math.round(c);
+    return { type:'essay-int', text:`Sebuah segitiga siku-siku memiliki sisi tegak a=${a} dan b=${b}. Hitung panjang sisi miring c. <i>(Jawaban bilangan bulat)</i>`, answer: ci, exact: c };
+  }
+  function essayLegInt(){
+    const a = randInt(6,25), b = randInt(3,24); // c=a (hipotenusa), b diketahui
+    if(b>=a) return essayLegInt();
+    const c=a, known=b; const x = Math.sqrt(c*c-known*known); const xi=Math.round(x);
+    return { type:'essay-int', text:`Pada segitiga siku-siku, sisi miring c=${c} dan salah satu sisi tegak b=${known}. Tentukan sisi tegak lainnya a. <i>(Jawaban bilangan bulat)</i>`, answer: xi, exact: x };
+  }
+  function essayHypotenuseDec1(){
+    const a = randInt(5,30), b = randInt(5,30);
+    const c = round1(Math.sqrt(a*a+b*b));
+    return { type:'essay-dec1', text:`Segitiga siku-siku dengan a=${a} dan b=${b}. Hitung c. <i>(Jawaban 1 angka desimal)</i>`, answer: c };
+  }
+  function essayLegDec1(){
+    const c = randInt(15,40), b = randInt(5,30);
+    if(b>=c) return essayLegDec1();
+    const a = round1(Math.sqrt(c*c-b*b));
+    return { type:'essay-dec1', text:`Diketahui c=${c} dan salah satu sisi b=${b}. Tentukan sisi lainnya a. <i>(Jawaban 1 angka desimal)</i>`, answer: a };
+  }
+  function mcqDiagonalRect(){
+    const p = randInt(6,20), l = randInt(5,18);
+    const d = Math.sqrt(p*p + l*l); const d1 = Math.round(d);
+    const opts = makeOptions(d1).map(v=>`${v}`);
+    const correct = opts.indexOf(String(d1));
+    return { type:'mcq', text:`Hitung panjang diagonal persegi panjang dengan panjang ${p} dan lebar ${l}.`, options: opts, correct };
+  }
+  function mcqHeightEquilateral(){
+    const s = randInt(6,30);
+    const h = Math.sqrt(s*s - (s/2)*(s/2));
+    const h1 = Math.round(h);
+    const opts = makeOptions(h1).map(v=>`${v}`);
+    const correct = opts.indexOf(String(h1));
+    return { type:'mcq', text:`Tinggi segitiga sama sisi dengan sisi ${s} adalah ...`, options: opts, correct };
+  }
+  function essayContextInt(desc){
+    // contoh: tangga ke dinding, atau tali di tiang
+    const a = randInt(6,25), b = randInt(6,25);
+    const c = Math.round(Math.sqrt(a*a + b*b));
+    return { type:'essay-int', text:`${desc}. Diketahui jarak alas=${a} dan tinggi=${b}. Berapa panjang sisi miring? <i>(Jawaban bilangan bulat)</i>`, answer: c };
+  }
+  function essayDecWithAngle30(){
+    // Jika salah satu sisi & sudut 30° diketahui: misal salah satu sisi tegak a dan sudut berhadapan 30° di salah satu sudut siku? Kita sederhanakan:
+    // Gunakan segitiga siku-siku dengan sudut 30° di salah satu sudut tajam: perbandingan sisi di segitiga 30-60-90. c = a / sin(30) = 2a
+    const a = randInt(5,25);
+    const c = round1(2*a);
+    return { type:'essay-dec1', text:`Segitiga siku-siku memiliki salah satu sudut tajam 30°. Jika salah satu sisi tegak a=${a}, tentukan sisi miring c. <i>(Jawaban 1 angka desimal)</i>`, answer: c };
+  }
+  function essayDecWithAngle45Leg(){
+    // Segitiga siku-siku isosceles (45-45-90): jika c diketahui, maka a = c/√2
+    const c = randInt(10,40);
+    const a = round1(c/Math.sqrt(2));
+    return { type:'essay-dec1', text:`Segitiga siku-siku dengan sudut 45°. Jika sisi miring c=${c}, tentukan salah satu sisi tegak a. <i>(Jawaban 1 angka desimal)</i>`, answer: a };
+  }
+  function essayShortestPathDec1(desc){
+    const x = randInt(20,80), y = randInt(10,60);
+    const d = round1(Math.sqrt(x*x + y*y));
+    return { type:'essay-dec1', text:`${desc}. Jarak horizontal=${x} dan vertikal=${y}. Tentukan jarak terpendek. <i>(Jawaban 1 angka desimal)</i>`, answer: d };
+  }
+  function essayCompositeShapeDec1(){
+    // gunakan persegi panjang + segitiga membentuk sisi miring keseluruhan
+    const a = randInt(6,20), b = randInt(6,20), c = randInt(6,20);
+    const d = round1(Math.sqrt((a+b)**2 + c*c)); // dua langkah pythagoras disederhanakan
+    return { type:'essay-dec1', text:`Bangun gabungan: jarak horizontal gabungan (a+b) dengan a=${a}, b=${b} dan vertikal c=${c}. Hitung jarak miring keseluruhan. <i>(Jawaban 1 angka desimal)</i>`, answer: d };
+  }
+  function essayTwoStageDec1(desc){
+    // dua kali pythagoras: misal naik vertikal y1, lalu mendatar x, lalu vertikal y2 ⇒ total vertikal |y1-y2| dan horizontal x
+    const x = randInt(10,50), y1 = randInt(5,40), y2 = randInt(5,40);
+    const d = round1(Math.sqrt(x*x + (Math.abs(y1-y2))**2));
+    return { type:'essay-dec1', text:`${desc}. Perpindahan mendatar ${x}, ketinggian awal ${y1}, ketinggian akhir ${y2}. Berapa jarak terpendek? <i>(Jawaban 1 angka desimal)</i>`, answer: d };
+  }
+
+  function buildQuestions(){
+    const qs = [];
+    // Urut sesuai indikator yang diberikan (20 butir)
+    qs.push( genInd1() );
+    qs.push( essayHypotenuseInt() );
+    qs.push( essayLegInt() );
+    qs.push( essayHypotenuseDec1() );
+    qs.push( essayLegInt() );
+    qs.push( essayHypotenuseDec1() );
+    qs.push( essayLegInt() );
+    qs.push( essayHypotenuseDec1() );
+    qs.push( essayLegDec1() );
+    qs.push( essayContextInt('Permasalahan kontekstual: tangga disandarkan ke dinding') );
+    qs.push( essayContextInt('Permasalahan kontekstual: panjang tali yang dipasang di tiang') );
+    qs.push( mcqDiagonalRect() );
+    qs.push( mcqHeightEquilateral() );
+    qs.push( essayDecWithAngle30() );
+    qs.push( essayDecWithAngle45Leg() );
+    qs.push( essayShortestPathDec1('Masalah jarak terpendek: menyeberang lapangan') );
+    qs.push( essayShortestPathDec1('Masalah jarak terpendek: mengukur tiang') );
+    qs.push( essayCompositeShapeDec1() );
+    qs.push( essayTwoStageDec1('Soal cerita level menengah (dua kali Pythagoras): atap bertingkat)') );
+    qs.push( essayTwoStageDec1('Soal cerita level menengah (dua kali Pythagoras): tangga bertingkat)') );
+
+    // Untuk memenuhi "10 bank soal per indikator", setiap generator memakai parameter acak.
+    // Saat aplikasi dipanggil, satu variasi acak dipilih otomatis dari masing-masing indikator.
+
+    return qs.slice(0,20);
+  }
+
+  // ====== MULAI ASESMEN ======
+  let current = 0;
+  function startAssessment(){
+    state.questions = buildQuestions();
+    state.answers = {}; state.flags={};
+    state.startedAt = new Date();
+    state.timeLeft = 60*60;
+    goto('assess');
+    buildNav();
+    showQuestion(0);
+    startTimer();
+  }
+
+  function startTimer(){
+    text('#timer', formatTime(state.timeLeft));
+    clearInterval(state.timer);
+    state.timer = setInterval(()=>{
+      state.timeLeft--; if(state.timeLeft<0){ clearInterval(state.timer); finishAssessment(true); return; }
+      text('#timer', formatTime(state.timeLeft));
+    },1000);
+  }
+
+  function buildNav(){
+    const g = $('#navgrid'); g.innerHTML='';
+    for(let i=0;i<25;i++){
+      const cell = document.createElement('div');
+      cell.className = 'cell white' + (i>=state.questions.length?' disabled':'');
+      cell.textContent = (i+1);
+      if(i<state.questions.length){
+        cell.addEventListener('click', ()=>showQuestion(i));
+      }
+      g.appendChild(cell);
+    }
+    updateNavColors();
+    $('#btn-toggle-nav').addEventListener('click', ()=>{
+      const lay = $('#layout'); lay.classList.toggle('collapsed');
     });
+  }
+  function updateNavColors(){
+    const cells = Array.from(document.querySelectorAll('#navgrid .cell'));
+    for(let i=0;i<state.questions.length;i++){
+      const cell = cells[i];
+      const ans = state.answers[i];
+      const flagged = !!state.flags[i];
+      cell.classList.remove('white','black','yellow');
+      if(flagged) cell.classList.add('yellow');
+      else if(ans!==undefined && ans!==null && !(Array.isArray(ans)&&ans.length===0)) cell.classList.add('black');
+      else cell.classList.add('white');
+    }
+  }
 
-    window.addEventListener('load', () => input.focus());
-  </script>
+  function renderInputs(q, idx){
+    const wrap = $('#q-inputs');
+    wrap.innerHTML = '';
+    if(q.type==='mcq'){
+      q.options.forEach((opt, i)=>{
+        const id = `q${idx}_opt${i}`;
+        const div = document.createElement('div');
+        div.innerHTML = `<label><input type="radio" name="q${idx}" value="${i}"> ${opt}</label>`;
+        wrap.appendChild(div);
+      });
+      if(state.answers[idx]!==undefined){
+        const sel = wrap.querySelector(`input[name="q${idx}"][value="${state.answers[idx]}"]`);
+        if(sel) sel.checked = true;
+      }
+    } else if(q.type==='mcqx2'){
+      q.options.forEach((opt, i)=>{
+        const id = `q${idx}_opt${i}`;
+        const div = document.createElement('div');
+        div.innerHTML = `<label><input type="checkbox" name="q${idx}" value="${i}"> ${opt}</label>`;
+        wrap.appendChild(div);
+      });
+      if(Array.isArray(state.answers[idx])){
+        for(const v of state.answers[idx]){
+          const sel = wrap.querySelector(`input[name="q${idx}"][value="${v}"]`);
+          if(sel) sel.checked = true;
+        }
+      }
+    } else if(q.type==='essay-int'){
+      const input = document.createElement('input');
+      input.type='number'; input.step='1'; input.placeholder='Ketik bilangan bulat';
+      input.value = state.answers[idx]!==undefined? state.answers[idx] : '';
+      wrap.appendChild(input);
+    } else if(q.type==='essay-dec1'){
+      const input = document.createElement('input');
+      input.type='number'; input.step='0.1'; input.placeholder='Ketik angka 1 desimal';
+      input.value = state.answers[idx]!==undefined? state.answers[idx] : '';
+      wrap.appendChild(input);
+    }
+  }
+
+  function showQuestion(i){
+    current = i;
+    const q = state.questions[i];
+    html('#q-meta', `Soal ${i+1} dari ${state.questions.length}`);
+    html('#q-text', q.text);
+    renderInputs(q, i);
+    $('#flag').checked = !!state.flags[i];
+    updateNavColors();
+  }
+
+  function readCurrentAnswer(){
+    const q = state.questions[current];
+    const wrap = $('#q-inputs');
+    if(q.type==='mcq'){
+      const sel = wrap.querySelector('input[type="radio"]:checked');
+      return sel? Number(sel.value) : null;
+    } else if(q.type==='mcqx2'){
+      const sels = Array.from(wrap.querySelectorAll('input[type="checkbox"]:checked')).map(el=>Number(el.value));
+      return sels;
+    } else {
+      const inp = wrap.querySelector('input');
+      if(!inp) return null;
+      const val = inp.value.trim();
+      if(val==='') return null;
+      return q.type==='essay-int' ? parseInt(val,10) : parseFloat(parseFloat(val).toFixed(1));
+    }
+  }
+
+  $('#flag').addEventListener('change', (e)=>{ state.flags[current] = e.target.checked; updateNavColors(); });
+  $('#btn-prev').addEventListener('click', ()=>{ saveAnswer(); if(current>0) showQuestion(current-1); });
+  $('#btn-next').addEventListener('click', ()=>{ saveAnswer(); if(current<state.questions.length-1) showQuestion(current+1); });
+
+  function saveAnswer(){
+    const ans = readCurrentAnswer();
+    if(ans!==null) state.answers[current]=ans; else delete state.answers[current];
+    updateNavColors();
+  }
+
+  $('#btn-finish').addEventListener('click', ()=>{ saveAnswer(); finishAssessment(false); });
+
+  function finishAssessment(auto=false){
+    clearInterval(state.timer);
+    // hitung skor
+    let correct = 0;
+    state.questions.forEach((q, idx)=>{
+      const ans = state.answers[idx];
+      if(q.type==='mcq'){
+        if(ans===q.correct) correct++;
+      } else if(q.type==='mcqx2'){
+        const sel = Array.isArray(ans)? new Set(ans) : new Set();
+        if(sel.size===2 && q.correct.size===2){
+          let ok=true; for(const v of q.correct){ if(!sel.has(v)) {ok=false; break;} }
+          if(ok && sel.size===q.correct.size) correct++;
+        }
+      } else if(q.type==='essay-int'){
+        if(ans!==null && ans!==undefined){
+          if(Number.isInteger(ans)){
+            // cocokkan dengan jawaban bulat terdekat
+            if(ans === Math.round(q.answer ?? q.exact)) correct++;
+          }
+        }
+      } else if(q.type==='essay-dec1'){
+        if(ans!==null && ans!==undefined){
+          const target = Number((q.answer).toFixed? q.answer.toFixed(1) : q.answer);
+          if(dec1Equal(Number(ans), Number(target))) correct++;
+        }
+      }
+    });
+    state.score = correct * 5; // sesuai ketentuan
+
+    state.finishedAt = new Date();
+    state.durationSec = Math.max(0, Math.floor((state.finishedAt - state.startedAt)/1000));
+
+    // Ke hasil
+    showResultAndSend();
+  }
+
+  function showResultAndSend(){
+    goto('result');
+    const payload = {
+      NAMA: state.user.nama,
+      KELAS: state.user.kelas,              // password = kelas
+      JENIS_TES: state.chosenJenisTes,
+      TOKEN: state.tokenInput,
+      SCORE: String(state.score),
+      DURASI: formatTime(state.durationSec),
+      WAKTU_SIMPAN: nowLocalISO()
+    };
+
+    const out = `
+      <div class="row grid-3">
+        <div class="ok"><b>NAMA:</b> ${payload.NAMA}</div>
+        <div class="ok"><b>KELAS:</b> ${payload.KELAS}</div>
+        <div class="ok"><b>JENIS_TES:</b> ${payload.JENIS_TES}</div>
+      </div>
+      <div class="row grid-3" style="margin-top:10px">
+        <div class="ok"><b>TOKEN:</b> ${payload.TOKEN}</div>
+        <div class="ok"><b>SCORE:</b> ${payload.SCORE}</div>
+        <div class="ok"><b>DURASI:</b> ${payload.DURASI}</div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="ok"><b>WAKTU_SIMPAN:</b> ${payload.WAKTU_SIMPAN}</div>
+      </div>
+    `;
+    html('#result-fields', out);
+
+    (async()=>{
+      try{
+        const res = await postResult(payload);
+        const el = $('#result-status');
+        if(res && res.success){ el.textContent = 'Data berhasil dikirim dan disimpan.'; el.className='ok'; }
+        else { el.textContent = 'Gagal menyimpan: ' + (res && res.error ? res.error : 'Tidak diketahui'); el.className='error'; }
+      }catch(err){
+        const el = $('#result-status'); el.textContent = 'Gagal menyimpan: ' + err.message; el.className='error';
+      }
+    })();
+  }
+
+  $('#btn-restart').addEventListener('click', ()=>{
+    // Reset sebagian besar state, muat ulang peserta agar tidak bentrok antar user
+    state.user=null; state.answers={}; state.flags={}; state.questions=[]; state.startedAt=null; state.finishedAt=null; state.score=0; state.timeLeft=3600; clearInterval(state.timer);
+    passwordInp.value=''; $('#token').value='';
+    goto('login');
+  });
+
+  // Sembunyikan navigasi via tombol
+  // (sudah di-set pada buildNav)
+
+  // ====== INISIALISASI ======
+  populateUsers();
+})();
+</script>
 </body>
 </html>
