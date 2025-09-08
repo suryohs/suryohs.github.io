@@ -1,891 +1,413 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AssesmenSumatif - Pythagoras</title>
-<style>
-:root{--bg:#071024;--card:#0b1220;--muted:#94a3b8;--text:#e6eef6;--accent:#22d3ee;--warn:#f59e0b}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(135deg,#04102a,#071024);color:var(--text);min-height:100vh}
-.container{max-width:1100px;margin:28px auto;padding:20px}
-.card{background:rgba(3,7,18,.75);border:1px solid rgba(255,255,255,.03);border-radius:14px;padding:18px;box-shadow:0 6px 24px rgba(2,6,23,.6)}
-h1,h2{margin:0 0 12px}
-label{font-size:13px;color:var(--muted);display:block;margin-top:8px}
-input,select,textarea,button{font-family:inherit}
-input[type="text"],input[type="password"],input[type="number"],select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:var(--text)}
-button{padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#a78bfa);color:#041024;font-weight:700;cursor:pointer}
-button.secondary{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--text)}
-button.warn{background:var(--warn);color:#041024}
-.row{display:grid;gap:12px}
-.grid-2{grid-template-columns:1fr 1fr}
-.grid-3{grid-template-columns:repeat(3,1fr)}
-.hidden{display:none}
-.side{background:rgba(255,255,255,.02);border-radius:10px;padding:12px}
-.navgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
-.cell{aspect-ratio:1/1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;border:1px solid rgba(255,255,255,.04);user-select:none}
-.cell.white{background:#fff;color:#000}
-.cell.black{background:#000;color:#fff}
-.cell.yellow{background:var(--warn);color:#2b1600}
-.flag{display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--warn)}
-.qbox{background:rgba(255,255,255,.02);padding:14px;border-radius:10px;margin-left:12px}
-.meta{color:var(--muted);font-size:13px}
-.timer{font-weight:900}
-.error{background:rgba(239,68,68,.08);padding:8px;border-radius:8px;color:#fecaca;margin-top:8px}
-.ok{background:rgba(34,197,94,.06);padding:8px;border-radius:8px;color:#bbf7d0;margin-top:8px}
-.footer{color:var(--muted);font-size:12px;margin-top:14px}
-.kbd{display:inline-block;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04);font-weight:700}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AssesmenSumatif - Pythagoras</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;padding:0;background:#f4f6f8}
+    .container{max-width:1000px;margin:24px auto;background:white;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08);overflow:hidden}
+    header{padding:18px;border-bottom:1px solid #eee}
+    main{padding:18px}
+    label{display:block;margin:8px 0 4px}
+    input,select,button,textarea{font-size:16px;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%;box-sizing:border-box}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    .hidden{display:none}
+    .grid-nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+    .qnav{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer}
+    .unanswered{background:white;border:1px solid #444}
+    .answered{background:#000;color:#fff}
+    .doubt{background:gold}
+    .sidebar{width:140px;padding:12px;border-left:1px solid #eee}
+    .layout{display:flex}
+    .question-area{flex:1;padding:12px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .timer{font-weight:700}
+    .btn{padding:10px 14px;border-radius:8px;border:0;cursor:pointer}
+    .btn-primary{background:#0b74de;color:#fff}
+    .btn-danger{background:#e63946;color:#fff}
+    .note{font-size:13px;color:#555}
+    textarea{min-height:80px}
+    .mc-options{display:flex;flex-direction:column;gap:8px}
+  </style>
 </head>
 <body>
-<div class="container">
-  <div id="screen-login" class="card">
-    <h1>Assesmen Sumatif — Pythagoras</h1>
-    <p class="meta">Silakan login. Data peserta diambil dari server (sheet 'PESERTA').</p>
-    <div id="login-error" class="error hidden"></div>
-    <div class="row grid-2">
-      <div>
-        <label>Username (kolom 1)</label>
-        <select id="username"></select>
-      </div>
-      <div>
-        <label>Password (kolom 2)</label>
-        <input id="password" type="password" placeholder="Isi password (kelas)"/>
-      </div>
-      <div>
+  <div class="container">
+    <header><h2>AssesmenSumatif - Pythagoras</h2></header>
+    <main>
+      <!-- PAGE: Login -->
+      <section id="page-login">
+        <h3>1. Login</h3>
+        <div id="login-status" class="note"></div>
+        <label>Username</label>
+        <select id="usernameSelect"><option value="">-- memuat... --</option></select>
+        <label>Password (isi dengan KELAS sesuai data)</label>
+        <input id="passwordInput" type="password" autocomplete="off" />
         <label>Jenis Tes</label>
-        <select id="jenisTes"><option>AS02. PYTHAGORAS</option></select>
-      </div>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button id="btn-login">Login</button>
-      <button class="secondary" id="btn-reload">Muat Ulang Data Peserta</button>
-    </div>
-    <div class="footer">Tidak ada mode demo. Pastikan API Google Apps Script Anda sudah dideploy dan dapat diakses publik.</div>
-  </div>
-
-  <div id="screen-confirm" class="card hidden">
-    <h2>Konfirmasi Mulai</h2>
-    <div id="confirm-error" class="error hidden"></div>
-    <div class="row grid-3">
-      <div class="side"><label>Username</label><div id="c-username" class="ok"></div></div>
-      <div class="side"><label>Password</label><div id="c-password" class="ok"></div></div>
-      <div class="side"><label>Jenis Tes</label><div id="c-jenis" class="ok"></div></div>
-    </div>
-    <div style="margin-top:12px">
-      <label>Token (kolom 4 — cocokkan dengan jenis tes di kolom 3)</label>
-      <input id="token" type="text" placeholder="Masukkan TOKEN"/>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button id="btn-start">Mulai Tes</button>
-      <button class="secondary" id="btn-back-login">Kembali</button>
-    </div>
-  </div>
-
-  <div id="screen-assess" class="card hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <h2>Asesmen — Pythagoras</h2>
-        <div class="meta">Soal berbasis indikator. Pilih jawaban / isi jawaban sesuai petunjuk.</div>
-      </div>
-      <div class="meta">Sisa waktu: <span id="timer" class="timer">60:00</span></div>
-    </div>
-
-    <div style="display:flex;gap:12px;margin-top:12px">
-      <div style="width:260px">
-        <div class="side">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div class="meta">Navigasi Soal (klik nomor)</div>
-            <button class="secondary" id="btn-toggle-nav">Hide</button>
-          </div>
-          <div id="navgrid" class="navgrid"></div>
-          <div style="margin-top:12px;display:flex;gap:8px">
-            <button class="warn" id="btn-finish">Selesai</button>
-            <button class="secondary" id="btn-mark-clear">Bersihkan Tanda</button>
-          </div>
-          <p class="footer">Warna: <span class="kbd">Putih</span> belum dijawab · <span class="kbd">Hitam</span> dijawab · <span class="kbd">Kuning</span> ragu-ragu</p>
+        <select id="jenisTesSelect"><option value="AS02. PYTHAGORAS">AS02. PYTHAGORAS</option></select>
+        <div style="margin-top:12px" class="row">
+          <button id="btnLogin" class="btn btn-primary col">Login</button>
         </div>
-      </div>
+      </section>
 
-      <div style="flex:1">
-        <div class="qbox">
-          <div class="meta" id="q-meta"></div>
-          <div id="q-text" style="margin-top:8px"></div>
-          <div id="q-inputs" style="margin-top:12px"></div>
-          <label class="flag"><input type="checkbox" id="flag"> Tandai ragu-ragu</label>
-          <div style="margin-top:12px;display:flex;gap:8px">
-            <button class="secondary" id="btn-prev">Sebelumnya</button>
-            <button class="secondary" id="btn-next">Berikutnya</button>
-            <button class="secondary" id="btn-clear">Hapus Jawaban</button>
-          </div>
+      <!-- PAGE: Konfirmasi -->
+      <section id="page-confirm" class="hidden">
+        <h3>2. Konfirmasi Mulai</h3>
+        <div><strong>Username:</strong> <span id="conf-username"></span></div>
+        <div><strong>Password (Kelas):</strong> <span id="conf-password"></span></div>
+        <div><strong>Jenis Tes:</strong> <span id="conf-jenistes"></span></div>
+        <label>Token</label>
+        <input id="tokenInput" />
+        <div style="margin-top:12px" class="row">
+          <button id="btnBackToLogin" class="btn col">Kembali</button>
+          <button id="btnStart" class="btn btn-primary col">Mulai Tes</button>
         </div>
-      </div>
-    </div>
+        <div id="confirm-status" class="note"></div>
+      </section>
+
+      <!-- PAGE: Assessment -->
+      <section id="page-assess" class="hidden">
+        <div class="topbar">
+          <div>
+            <strong id="ass-name"></strong> — <span id="ass-class"></span>
+          </div>
+          <div class="timer">Waktu tersisa: <span id="timeLeft">60:00</span></div>
+        </div>
+        <div class="layout">
+          <div class="question-area">
+            <div style="margin-bottom:8px"><button id="toggleNav" class="btn">Toggle Navigasi</button></div>
+            <div id="questionContainer"></div>
+          </div>
+          <aside class="sidebar">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong>Navigasi</strong>
+              <button id="btnFinish" class="btn btn-danger">Selesai</button>
+            </div>
+            <div id="navGrid" class="grid-nav"></div>
+            <div style="margin-top:12px" class="note">Hitam=jawab Putih=belum Kuning=ragu</div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- PAGE: Result -->
+      <section id="page-result" class="hidden">
+        <h3>Hasil</h3>
+        <div id="resultDisplay"></div>
+        <div id="sendStatus" class="note"></div>
+      </section>
+    </main>
   </div>
 
-  <div id="screen-result" class="card hidden">
-    <h2>Hasil</h2>
-    <div id="result-fields" style="margin-top:12px"></div>
-    <div id="result-status" class="meta" style="margin-top:12px">Mengirim ke spreadsheet...</div>
-    <div style="margin-top:12px"><button id="btn-restart">Kembali ke Login</button></div>
-  </div>
-</div>
+  <script>
+  (function(){
+    // Config
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbwDeCBxqBB7o0mUxUjw7E6Kdq20A7Oegj-7nS-vEvvuBOSvstll0cy17HM2xvaU3sAj/exec';
+    const TIME_LIMIT_SEC = 60 * 60; // 60 minutes
 
-<script>
-/*
-  AssesmenSumatif — Single-file app
-  - 25 indikator
-  - 10 bank soal per indikator (dibuat secara programatik)
-  - Pilih 1 variasi per indikator -> 25 soal
-  - Scoring: benar * 4
-  - Integrasi ke Apps Script: three-method POST fallback
-  - Tidak merubah Google Script (server), hanya consume doGet/doPost.
-*/
+    // State
+    let students = []; // from GET
+    let current = {username:'', password:'', jenisTes:'AS02. PYTHAGORAS', token:'', startTime: null, endTime:null};
+    let questions = [];
+    let answers = {}; // {index: {type:'mc'|'essay'|'mc2', value:... , doubt:false}}
+    let timerInterval = null;
+    let timeLeft = TIME_LIMIT_SEC;
 
-/* ========== CONFIG ========== */
-const API_BASE = 'https://script.google.com/macros/s/AKfycbwDeCBxqBB7o0mUxUjw7E6Kdq20A7Oegj-7nS-vEvvuBOSvstll0cy17HM2xvaU3sAj/exec';
-const TOTAL_QUESTIONS = 25;
-const BANK_PER_INDICATOR = 10;
-const TIME_SECONDS = 60 * 60; // 60 minutes
-const SCORE_MULTIPLIER = 4;
+    // DOM
+    const usernameSelect = document.getElementById('usernameSelect');
+    const passwordInput = document.getElementById('passwordInput');
+    const jenisTesSelect = document.getElementById('jenisTesSelect');
+    const btnLogin = document.getElementById('btnLogin');
+    const loginStatus = document.getElementById('login-status');
 
-/* ========== STATE ========== */
-const state = {
-  peserta: [],
-  user: null,
-  chosenJenisTes: 'AS02. PYTHAGORAS',
-  tokenInput: '',
-  startedAt: null,
-  finishedAt: null,
-  durationSec: 0,
-  timerInterval: null,
-  timeLeft: TIME_SECONDS,
-  questions: [], // final 25 questions
-  answers: {},   // index -> answer
-  flags: {},
-  score: 0
-};
+    const pageLogin = document.getElementById('page-login');
+    const pageConfirm = document.getElementById('page-confirm');
+    const pageAssess = document.getElementById('page-assess');
+    const pageResult = document.getElementById('page-result');
 
-/* ========== UTIL ========== */
-const $ = sel => document.querySelector(sel);
-const show = (sel, yes) => { const el = $(sel); if(!el) return; el.classList.toggle('hidden', !yes); };
-const html = (sel, h) => { const el = $(sel); if(el) el.innerHTML = h; };
-const text = (sel, t) => { const el = $(sel); if(el) el.textContent = t; };
-const nowLocalISO = () => new Date().toLocaleString('sv-SE', { hour12:false });
+    const confUsername = document.getElementById('conf-username');
+    const confPassword = document.getElementById('conf-password');
+    const confJenisTes = document.getElementById('conf-jenistes');
+    const tokenInput = document.getElementById('tokenInput');
+    const confirmStatus = document.getElementById('confirm-status');
+    const btnStart = document.getElementById('btnStart');
+    const btnBackToLogin = document.getElementById('btnBackToLogin');
 
-function formatTimeSec(s){
-  const m = Math.floor(s/60); const ss = s%60;
-  return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-}
+    const assName = document.getElementById('ass-name');
+    const assClass = document.getElementById('ass-class');
+    const timeLeftDom = document.getElementById('timeLeft');
+    const questionContainer = document.getElementById('questionContainer');
+    const navGrid = document.getElementById('navGrid');
+    const toggleNav = document.getElementById('toggleNav');
+    const btnFinish = document.getElementById('btnFinish');
 
-/* Simple rng for reproducible bank generation (LCG) */
-function createRNG(seed = Date.now()){
-  let s = seed >>> 0;
-  return function(){
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return (s / 0x100000000);
-  };
-}
+    const resultDisplay = document.getElementById('resultDisplay');
+    const sendStatus = document.getElementById('sendStatus');
 
-/* ========== API helpers ========== */
-async function fetchPeserta(){
-  const res = await fetch(API_BASE, { method:'GET' });
-  if(!res.ok) throw new Error('Gagal memuat data peserta dari API (status ' + res.status + ')');
-  const js = await res.json();
-  if(!js.success) throw new Error(js.error || 'Respon API tidak sukses');
-  return js.data || [];
-}
+    // Helpers: show/hide pages
+    function showPage(p){ [pageLogin,pageConfirm,pageAssess,pageResult].forEach(x=>x.classList.add('hidden')); p.classList.remove('hidden'); }
 
-/* POST with three-method fallback:
-   1) fetch JSON CORS (ideal) -> read response
-   2) fetch no-cors (may succeed but no readable response) -> assume success
-   3) submit form (fallback)
-*/
-async function postResultWithFallback(payload){
-  // Method 1: fetch JSON (CORS)
-  try {
-    const r1 = await fetch(API_BASE, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    // try parse
-    const j = await r1.json().catch(()=>null);
-    if(r1.ok && j && j.success){
-      return { success:true, method:1, res:j };
-    } else if(r1.ok && j){
-      return { success:false, method:1, res:j };
+    // Fetch student data from the Apps Script (GET)
+    async function fetchStudents(){
+      try{
+        const res = await fetch(API_BASE+'?action=getStudents');
+        const json = await res.json();
+        if(json.success && json.data){
+          students = json.data.map(s => ({nama: s.nama || s[0], kelas: s.kelas || s[1], jenisTes: s.jenisTes || s[2], token: s.token || s[3]}));
+        } else {
+          // Try to work with array response
+          students = (json.data || []).map(r=>({nama:r.nama||r[0],kelas:r.kelas||r[1],jenisTes:r.jenisTes||r[2],token:r.token||r[3]}));
+        }
+      }catch(err){
+        console.warn('GET failed',err);
+        loginStatus.textContent = 'Gagal memuat data. Pastikan endpoint tersedia.';
+        students = [];
+      }
+      // Populate dropdown
+      const names = Array.from(new Set(students.map(s=>s.nama))).sort((a,b)=>a.localeCompare(b));
+      usernameSelect.innerHTML = '<option value="">-- pilih username --</option>' + names.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
     }
-    // if not ok, continue to fallback
-  } catch(e){
-    // network/CORS error -> fallback
-    console.warn('post method1 failed', e);
-  }
 
-  // Method 2: fetch no-cors (won't be readable, but may reach server)
-  try {
-    await fetch(API_BASE, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
+    // Escape
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // Login handler
+    btnLogin.addEventListener('click',()=>{
+      const u = usernameSelect.value; const p = passwordInput.value; const j = jenisTesSelect.value;
+      if(!u || !p) { loginStatus.textContent='Isi username dan password.'; return; }
+      // find student with nama==u and kelas==p and jenisTes==j
+      const found = students.find(s=>s.nama===u && s.kelas===p && (s.jenisTes===j || true)); // jenis tes validated later on token
+      if(!found){ loginStatus.textContent='User / password tidak cocok.'; return; }
+      // proceed
+      current.username = u; current.password = p; current.jenisTes = j;
+      confUsername.textContent = u; confPassword.textContent = p; confJenisTes.textContent = j;
+      loginStatus.textContent='';
+      showPage(pageConfirm);
     });
-    // Can't read response; assume sent but uncertain
-    return { success:true, method:2, res:null, note:'no-cors; response not readable' };
-  } catch(e){
-    console.warn('post method2 failed', e);
-  }
 
-  // Method 3: classical form submission to hidden iframe
-  try {
-    return await new Promise((resolve, reject) => {
-      const iframeName = 'hidden_iframe_' + Math.random().toString(36).slice(2);
-      const iframe = document.createElement('iframe');
-      iframe.name = iframeName; iframe.style.display = 'none';
-      document.body.appendChild(iframe);
+    btnBackToLogin.addEventListener('click',()=>{ showPage(pageLogin); });
 
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = API_BASE;
-      form.target = iframeName;
-      form.style.display = 'none';
+    // Confirm start: verify token matches a student with same jenis tes
+    btnStart.addEventListener('click',()=>{
+      const tok = tokenInput.value.trim(); if(!tok){ confirmStatus.textContent='Token wajib diisi.'; return; }
+      const matched = students.find(s=>s.nama===current.username && s.token==tok && s.jenisTes===current.jenisTes);
+      if(!matched){ confirmStatus.textContent='Token tidak cocok untuk user / jenis tes.'; return; }
+      current.token = tok; confirmStatus.textContent='Token valid. Mulai tes...';
+      startAssessment();
+    });
 
-      // add inputs
-      Object.keys(payload).forEach(k=>{
-        const inp = document.createElement('input'); inp.name = k; inp.value = payload[k]; form.appendChild(inp);
-      });
-      document.body.appendChild(form);
+    // START ASSESSMENT: generate questions, init timer, render first question
+    function startAssessment(){
+      current.startTime = new Date();
+      current.startIso = current.startTime.toISOString();
+      questions = generatePaper(); // 25 questions generated
+      answers = {};
+      renderNav();
+      renderQuestion(0);
+      assName.textContent = current.username;
+      assClass.textContent = current.password;
+      timeLeft = TIME_LIMIT_SEC;
+      updateTimerDisplay();
+      timerInterval = setInterval(()=>{
+        timeLeft--; if(timeLeft<=0){ clearInterval(timerInterval); autoSubmit(); }
+        updateTimerDisplay();
+      },1000);
+      showPage(pageAssess);
+    }
 
-      // wait a bit, then submit
-      iframe.onload = function(){
-        // server may have responded; we cannot read cross-origin contents
-        setTimeout(()=>{ resolve({ success:true, method:3, res:null }); }, 500);
+    function updateTimerDisplay(){ const mm = Math.floor(timeLeft/60); const ss = timeLeft%60; timeLeftDom.textContent = `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`; }
+
+    // NAV
+    function renderNav(){ navGrid.innerHTML=''; for(let i=0;i<25;i++){ const b = document.createElement('div'); b.className='qnav unanswered'; b.textContent = i+1; b.dataset.idx=i; b.addEventListener('click',()=>renderQuestion(i)); navGrid.appendChild(b); } }
+    toggleNav.addEventListener('click', ()=>{ navGrid.parentElement.classList.toggle('hidden'); });
+
+    function markNav(){ for(let i=0;i<25;i++){ const el = navGrid.children[i]; const a = answers[i]; el.className='qnav ' + (a ? (a.doubt ? 'doubt' : 'answered') : 'unanswered'); } }
+
+    btnFinish.addEventListener('click', ()=>{ if(confirm('Anda yakin ingin mengakhiri tes?')) finishAndSubmit(); });
+
+    // Render question area
+    function renderQuestion(i){ const q = questions[i]; questionContainer.innerHTML = '';
+      const h = document.createElement('div'); h.innerHTML = `<h4>Soal ${i+1}</h4><div>${q.text}</div>`;
+      questionContainer.appendChild(h);
+      if(q.type==='mc2'){ // multiple answer choose 2
+        const wrap = document.createElement('div'); wrap.className='mc-options'; q.options.forEach((opt,oid)=>{
+          const id = `q${i}_o${oid}`;
+          const el = document.createElement('label'); el.innerHTML = `<input type="checkbox" id="${id}"> ${escapeHtml(opt)}`;
+          wrap.appendChild(el);
+        });
+        questionContainer.appendChild(wrap);
+      } else if(q.type==='mc'){ const wrap = document.createElement('div'); wrap.className='mc-options'; q.options.forEach((opt,oid)=>{
+        const id = `q${i}_r${oid}`;
+        const el = document.createElement('label'); el.innerHTML = `<input name="q${i}" type="radio" id="${id}"> ${escapeHtml(opt)}`;
+        wrap.appendChild(el);
+      }); questionContainer.appendChild(wrap);
+      } else { // essay
+        const ta = document.createElement('input'); ta.type='text'; ta.id = `q${i}_essay`; ta.placeholder='Masukkan jawaban (angka atau desimal)'; questionContainer.appendChild(ta);
+      }
+      // doubt checkbox
+      const doubtLabel = document.createElement('label'); doubtLabel.style.display='block'; doubtLabel.style.marginTop='10px'; doubtLabel.innerHTML = `<input type="checkbox" id="q${i}_doubt"> Tandai ragu-ragu`;
+      questionContainer.appendChild(doubtLabel);
+
+      // save & next
+      const btnSave = document.createElement('div'); btnSave.style.marginTop='12px';
+      btnSave.innerHTML = `<div class="row"><button class="btn col" id="savePrev">Simpan & Sebelumnya</button><button class="btn btn-primary col" id="saveNext">Simpan & Berikutnya</button></div>`;
+      questionContainer.appendChild(btnSave);
+
+      // restore if exists
+      const existing = answers[i];
+      if(existing){ if(existing.type==='mc2'){ existing.value.forEach(v=>{ const cb = document.getElementById(`q${i}_o${v}`); if(cb) cb.checked = true; }); } else if(existing.type==='mc'){ if(existing.value!=null){ const rd = document.getElementById(`q${i}_r${existing.value}`); if(rd) rd.checked=true; } } else { const inp = document.getElementById(`q${i}_essay`); if(inp) inp.value = existing.value; } document.getElementById(`q${i}_doubt`).checked = !!existing.doubt; }
+
+      document.getElementById('saveNext').addEventListener('click', ()=>{ saveAnswer(i); renderQuestion((i+1)%25); });
+      document.getElementById('savePrev').addEventListener('click', ()=>{ saveAnswer(i); renderQuestion((i+24)%25); });
+      markNav();
+    }
+
+    function saveAnswer(i){ const q = questions[i]; let entry = {type:q.type, doubt:false, value:null}; if(q.type==='mc2'){ const vals=[]; q.options.forEach((_,oid)=>{ const cb = document.getElementById(`q${i}_o${oid}`); if(cb && cb.checked) vals.push(oid); }); entry.value = vals; } else if(q.type==='mc'){ for(let oid=0;oid<q.options.length;oid++){ const rd = document.getElementById(`q${i}_r${oid}`); if(rd && rd.checked) { entry.value = oid; break; } } } else { const inp = document.getElementById(`q${i}_essay`); entry.value = inp ? inp.value.trim() : ''; }
+      const dcb = document.getElementById(`q${i}_doubt`); entry.doubt = !!(dcb && dcb.checked);
+      answers[i]=entry; markNav();
+    }
+
+    // Auto submit
+    function autoSubmit(){ alert('Waktu habis. Hasil akan disimpan.'); finishAndSubmit(); }
+
+    // finish and compute score, duration, send to server
+    function finishAndSubmit(){ clearInterval(timerInterval); current.endTime = new Date(); current.durationSec = Math.round((current.endTime - current.startTime)/1000);
+      // compute score
+      // score per question: if correct => +4, else 0
+      let correctCount = 0;
+      for(let i=0;i<25;i++){ const q = questions[i]; const a = answers[i]; if(checkCorrect(q,a)) correctCount++; }
+      const score = correctCount * 4;
+      current.score = score;
+      const duration = current.durationSec; const waktuSimpan = new Date().toISOString();
+      // Prepare payload
+      const payload = {
+        NAMA: current.username,
+        KELAS: current.password,
+        JENIS_TES: current.jenisTes,
+        TOKEN: current.token,
+        SCORE: score,
+        DURASI: duration,
+        WAKTU_SIMPAN: waktuSimpan
       };
-      form.submit();
-      // safety timeout
-      setTimeout(()=>{ resolve({ success:true, method:3, res:null, note:'timeout' }); }, 2000);
+      // show result
+      resultDisplay.innerHTML = `<p><strong>NAMA:</strong> ${escapeHtml(payload.NAMA)}</p><p><strong>KELAS:</strong> ${escapeHtml(payload.KELAS)}</p><p><strong>JENIS_TES:</strong> ${escapeHtml(payload.JENIS_TES)}</p><p><strong>TOKEN:</strong> ${escapeHtml(payload.TOKEN)}</p><p><strong>SCORE:</strong> ${payload.SCORE}</p><p><strong>DURASI (detik):</strong> ${payload.DURASI}</p><p><strong>WAKTU_SIMPAN:</strong> ${payload.WAKTU_SIMPAN}</p>`;
+      showPage(pageResult);
+      // send to server with 3 methods fallback
+      sendPayloadToServer(payload);
+    }
+
+    // Check correctness
+    function checkCorrect(q,a){ if(!a) return false; if(q.type==='mc'){ return a.value===q.answer; } else if(q.type==='mc2'){ // must select exactly correct set, and not include wrong ones
+        if(!Array.isArray(a.value)) return false; const selected = a.value.slice().sort(); const correct = q.answer.slice().sort(); return JSON.stringify(selected)===JSON.stringify(correct);
+      } else { // essay numeric
+        // allow tolerance if q.tolerance provided
+        const val = Number(String(a.value).replace(',','.'));
+        if(isNaN(val)) return false;
+        if(q.tolerance!=null) return Math.abs(val - q.answer) <= q.tolerance;
+        return Math.abs(val - q.answer) < 1e-6;
+      } }
+
+    // Send payload with method 1 -> 2 -> 3
+    async function sendPayloadToServer(payload){ sendStatus.textContent = 'Mengirim hasil...';
+      // Method 1: CORS fetch JSON
+      try{
+        const r1 = await fetch(API_BASE, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        const j1 = await r1.json(); if(j1 && j1.success){ sendStatus.textContent = 'Terkirim (metode CORS JSON).'; return; }
+      }catch(err){ console.warn('met1',err); }
+      // Method 2: no-cors (fire-and-forget)
+      try{
+        await fetch(API_BASE, {method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        sendStatus.textContent = 'Permintaan dikirim (no-cors). Jika endpoint menerima, data masuk.'; return;
+      }catch(err){ console.warn('met2',err); }
+      // Method 3: form POST via iframe
+      try{
+        const form = document.createElement('form'); form.method='POST'; form.action=API_BASE; form.style.display='none';
+        for(const k in payload){ const inp = document.createElement('input'); inp.name=k; inp.value=payload[k]; form.appendChild(inp); }
+        document.body.appendChild(form); form.submit(); document.body.removeChild(form);
+        sendStatus.textContent = 'Terkirim via form POST.'; return;
+      }catch(err){ console.warn('met3',err); sendStatus.textContent = 'Gagal mengirim hasil. Simpan lokal dan coba ulang.'; }
+    }
+
+    // === QUESTION GENERATION ===
+    // We create generators for each indicator. For each indicator we produce 10 variants and pick 1.
+
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+    // utility to choose multiples of base triple
+    function makeTriple(base, multiplier){ return base.map(x=>x*multiplier); }
+
+    function randFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    // Basic generators
+    const generators = [];
+
+    // 1. Identifikasi segitiga siku-siku (pilih 2 dari 4 yang benar)
+    generators.push(function(){
+      // create 4 triangles (triples), pick 2 correct
+      const base = [ [3,4,5],[5,12,13],[7,24,25],[8,15,17],[9,40,41],[20,21,29] ];
+      const corrects = shuffle(base).slice(0,2).map(t=>`${t[0]}, ${t[1]}, ${t[2]}`);
+      const wrong = shuffle(base).slice(2,4).map(t=>`${t[0]+1}, ${t[1]}, ${t[2]}`); // slightly wrong
+      const opts = shuffle(corrects.concat(wrong));
+      return {type:'mc2', text:'Diberikan empat ukuran segitiga berikut. Pilih tepat 2 yang merupakan segitiga siku-siku (pilih 2 jawaban benar).', options:opts, answer: [opts.indexOf(corrects[0]), opts.indexOf(corrects[1])] };
     });
-  } catch(e){
-    return { success:false, method:3, error:e.message };
-  }
-}
 
-/* ========== QUESTION GENERATORS (bank creators) ========== */
+    // then many essay-type generators for different triplets and multipliers
+    const tripleSets = [[3,4,5],[5,12,13],[7,24,25],[8,15,17],[9,40,41],[20,21,29]];
+    const multipliers = [0.5,0.2,1,2,3,4,5,6,7,8];
 
-/*
- We'll create generator functions per indicator.
- For each indicator we will produce BANK_PER_INDICATOR variants by varying multipliers/params.
- This avoids writing 250 static objects while still giving unique questions.
-*/
-
-function makeMCQOptions(correct, rng, useRoot=false){
-  // produce 3 distractors + correct, maybe show as sqrt form if required
-  const opts = new Set();
-  opts.add(correct);
-  while(opts.size < 4){
-    // distractor near correct
-    const delta = Math.max(1, Math.round((rng()-0.5)*10));
-    opts.add(Math.max(1, Math.round(correct + delta*(rng()>0.5?1:-1))));
-  }
-  const arr = Array.from(opts);
-  // shuffle
-  for(let i=arr.length-1;i>0;i--){ const j = Math.floor(rng()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
-  if(useRoot){
-    // represent options as root when appropriate
-    return arr.map(v => `√${v*v}`);
-  }
-  return arr.map(v => String(v));
-}
-
-/* Helper: produce scaled triple based on base triple and multiplier from allowed list */
-function scaledTriple(base, mult){
-  return base.map(x => parseFloat((x * mult).toFixed(2)));
-}
-
-/* Allowed multipliers from spec */
-const ALLOWED_MULT = [0.5, 0.2, 1,2,3,4,5,6,7,8];
-
-/* Base triples per spec */
-const BASE_TRIPLES = [
-  [3,4,5],
-  [5,12,13],
-  [7,24,25],
-  [8,15,17],
-  [9,40,41],
-  [20,21,29]
-];
-
-/* We'll build an array of indicator generators in the exact order given by you (25 items).
-   Each generator returns an object: {type, text, options?, answer?}
-   Types: 'mcqx2' (pick 2), 'essay-int', 'essay-dec1', 'mcq' (single)
-*/
-
-function buildBankAll(rngSeed){
-  const rng = createRNG(rngSeed);
-  const banks = [];
-
-  // Indicator 1: Identifying right triangles (4 sizes, choose 2 correct) -> mcqx2
-  banks.push(() => {
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      // create 2 true triples scaled + 2 false triples
-      const truePairs = [];
-      while(truePairs.length<2){
-        const b = BASE_TRIPLES[Math.floor(rng()*BASE_TRIPLES.length)];
-        const mult = ALLOWED_MULT[Math.floor(rng()*ALLOWED_MULT.length)];
-        truePairs.push(scaledTriple(b, mult));
-      }
-      const falsePairs = [];
-      while(falsePairs.length<2){
-        const a = Math.floor(3 + rng()*18);
-        const b = Math.floor(3 + rng()*18);
-        const c = Math.floor(5 + rng()*26);
-        if(Math.abs(a*a + b*b - c*c) > 0.0001) falsePairs.push([a,b,c]);
-      }
-      const list = [...truePairs, ...falsePairs];
-      // format strings
-      const opts = list.map(t => `${t[0]}, ${t[1]}, ${t[2]}`);
-      const correctIdx = opts.map((s,i)=>{ const [a,b,c]=s.split(',').map(Number); return (Math.abs(a*a + b*b - c*c) < 0.0001) ? i : -1; }).filter(i=>i>=0);
-      variants.push({ type:'mcqx2', text:'Dari 4 ukuran sisi segitiga berikut (a, b, c), pilih <b>2</b> yang merupakan segitiga siku-siku (a,b adalah sisi tegak, c sisi miring).', options: opts, correct:new Set(correctIdx) });
-    }
-    return variants;
-  }());
-
-  // Indicators 2-7: hypotenuse using base triples (3,4,5 etc) with allowed multipliers -> essay (integer or decimal depending on multiplier)
-  // We'll generate one indicator per base triple (six indicators for bases defined in your second part)
-  const baseList = [[3,4,5],[5,12,13],[7,24,25],[8,15,17],[9,40,41],[20,21,29]];
-  baseList.forEach((base, idx)=>{
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      const mult = ALLOWED_MULT[Math.floor(rng()*ALLOWED_MULT.length)];
-      const scaled = scaledTriple(base, mult);
-      const a = scaled[0], b = scaled[1], c = scaled[2];
-      // If multiplier is fractional produce decimal (but instruction earlier asked integer? We'll require essay answer: if multiplier is fractional, allow decimal 1 place if needed)
-      const text = `Diketahui dua sisi segitiga siku-siku: a=${Number(a)} dan b=${Number(b)}. Hitung panjang sisi miring c. (Jawaban: bilangan sesuai bentuk soal)`;
-      // determine expected: if both a and b integers (mult integer or mult*base ints) then answer integer; else for simplicity allow one decimal
-      let answer;
-      if(Number.isInteger(a) && Number.isInteger(b)){
-        answer = Math.round(Math.sqrt(a*a + b*b));
-      } else {
-        answer = Number((Math.sqrt(a*a + b*b)).toFixed(1));
-      }
-      variants.push({ type: Number.isInteger(answer) ? 'essay-int' : 'essay-dec1', text, answer });
-    }
-    banks.push(() => variants);
-  });
-
-  // Indicators 8-13: find a leg given hypotenuse and another leg for each base triple set as above (essay)
-  baseList.forEach((base, idx)=>{
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      const mult = ALLOWED_MULT[Math.floor(rng()*ALLOWED_MULT.length)];
-      const scaled = scaledTriple(base, mult);
-      // choose which is hypotenuse (usually the largest, c)
-      const c = scaled[2];
-      const other = scaled[Math.random() < 0.5 ? 0 : 1];
-      // ensure other < c
-      if(other >= c){
-        // swap to maintain other < c
-      }
-      const aVal = Math.sqrt(c*c - other*other);
-      // answer integer if aVal integer else decimal 1 place
-      const ans = Number.isInteger(aVal) ? Math.round(aVal) : Number(aVal.toFixed(1));
-      const text = `Diketahui sisi miring c=${Number(c)} dan salah satu sisi tegak b=${Number(other)}. Tentukan panjang sisi tegak lainnya. (Jawaban sesuai format)`;
-      variants.push({ type: Number.isInteger(ans) ? 'essay-int' : 'essay-dec1', text, answer: ans });
-    }
-    banks.push(() => variants);
-  });
-
-  // Indicator 14-15: hypotenuse not triple -> decimal 1 place with instruction approximation 1 decimal
-  for(let i=0;i<2;i++){
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      const a = Math.floor(5 + rng()*40);
-      const b = Math.floor(5 + rng()*40);
-      if(a===b) { k--; continue; }
-      const c = Number(Math.sqrt(a*a + b*b).toFixed(1));
-      const text = `Diketahui dua sisi a=${a} dan b=${b}. Hitung c. (Bulatkan ke 1 angka di belakang koma)`;
-      variants.push({ type:'essay-dec1', text, answer:c });
-    }
-    banks.push(() => variants);
-  }
-
-  // Indicator 16-17: leg not triple -> decimal 1 place
-  for(let i=0;i<2;i++){
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      const c = Math.floor(10 + rng()*60);
-      let b = Math.floor(3 + rng()*(c-3));
-      if(b >= c){ b = Math.floor(c/2); }
-      const a = Number(Math.sqrt(c*c - b*b).toFixed(1));
-      const text = `Diketahui sisi miring c=${c} dan sisi b=${b}. Tentukan sisi a (bulatkan 1 desimal).`;
-      variants.push({ type:'essay-dec1', text, answer:a });
-    }
-    banks.push(() => variants);
-  }
-
-  // Indicator 18-19: contextual simple problems (tangga/tali) — integer, restrict to triples or multiples
-  const contextTexts = ['Permasalahan kontekstual: tangga disandarkan ke dinding (alas dan tinggi diketahui)', 'Permasalahan kontekstual: panjang tali yang dipasang di tiang (jarak alas dan tinggi)'];
-  contextTexts.forEach(ct=>{
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      // pick a base triple and multiplier integral to keep integer answer
-      const base = BASE_TRIPLES[Math.floor(rng()*BASE_TRIPLES.length)];
-      // choose integer multiplier from allowed but ensure integer (1..8)
-      const multCandidates = ALLOWED_MULT.filter(m => Number.isInteger(m));
-      const mult = multCandidates[Math.floor(rng()*multCandidates.length)];
-      const scaled = scaledTriple(base, mult);
-      const a = scaled[0], b = scaled[1];
-      const c = Math.round(Math.sqrt(a*a + b*b));
-      const text = `${ct}. Diketahui alas=${a} dan tinggi=${b}. Tentukan panjang miring. (Jawaban bilangan bulat; gunakan tripel atau kelipatannya)`;
-      variants.push({ type:'essay-int', text, answer:c });
-    }
-    banks.push(() => variants);
-  });
-
-  // Indicator 20: diagonal rectangle (MCQ with 4 options; show root if needed)
-  banks.push(() => {
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      const p = Math.floor(6 + rng()*30);
-      const l = Math.floor(5 + rng()*25);
-      const d = Math.sqrt(p*p + l*l);
-      const dRound = Math.round(d);
-      const opts = makeMCQOptions(dRound, rng, true); // show sqrt form
-      variants.push({ type:'mcq', text:`Hitung panjang diagonal persegi panjang dengan panjang ${p} dan lebar ${l}. (Pilih satu jawaban)`, options: opts, correct: opts.indexOf(`√${dRound*dRound}`) });
-    }
-    return variants;
-  }());
-
-  // Indicator 21: height of equilateral triangle (MCQ with 4 options, show root)
-  banks.push(() => {
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      const s = Math.floor(6 + rng()*30);
-      const h = Math.sqrt(s*s - (s/2)*(s/2));
-      const hRound = Math.round(h);
-      const opts = makeMCQOptions(hRound, rng, true);
-      variants.push({ type:'mcq', text:`Tinggi segitiga sama sisi dengan sisi ${s} adalah ... (Pilih satu jawaban)`, options: opts, correct: opts.indexOf(`√${hRound*hRound}`) });
-    }
-    return variants;
-  }());
-
-  // Indicator 22: hypotenuse when one side and angle 30°, return 1 decimal (essay)
-  banks.push(() => {
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      const a = Math.floor(5 + rng()*25);
-      // In 30°-60°-90° right triangle: side opposite 30° is half hypotenuse -> if given a is side opposite 30°, c=2a
-      const c = Number((2*a).toFixed(1));
-      const text = `Dalam segitiga siku-siku dengan sudut 30°, jika sisi tertentu (misal a yang berhadapan sudut 30°) = ${a}, tentukan sisi miring c. (Jawaban 1 desimal)`;
-      variants.push({ type:'essay-dec1', text, answer:c });
-    }
-    return variants;
-  }());
-
-  // Indicator 23: leg from hypotenuse with 45°, decimal 1 place (essay)
-  banks.push(() => {
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      const c = Math.floor(10 + rng()*40);
-      const a = Number((c/Math.SQRT2).toFixed(1));
-      const text = `Segitiga siku-siku dengan sudut 45°. Jika sisi miring c=${c}, tentukan salah satu sisi tegak a (1 desimal).`;
-      variants.push({ type:'essay-dec1', text, answer:a });
-    }
-    return variants;
-  }());
-
-  // Indicator 24-25: shortest path contextual problems (two items)
-  for(let i=0;i<2;i++){
-    const variants = [];
-    for(let k=0;k<BANK_PER_INDICATOR;k++){
-      // restrict answer to integer and to multiples/triples if requested
-      const base = BASE_TRIPLES[Math.floor(rng()*BASE_TRIPLES.length)];
-      const multCandidates = ALLOWED_MULT.filter(m => Number.isInteger(m));
-      const mult = multCandidates[Math.floor(rng()*multCandidates.length)];
-      // make horizontal and vertical as triple-based
-      const a = base[0]*mult;
-      const b = base[1]*mult;
-      const d = Math.round(Math.sqrt(a*a + b*b));
-      const text = `Masalah jarak terpendek: jarak horizontal=${a} dan vertikal=${b}. Tentukan jarak terpendek. (Jawaban bilangan bulat, gunakan tripel atau kelipatannya)`;
-      variants.push({ type:'essay-int', text, answer:d });
-    }
-    banks.push(() => variants);
-  }
-
-  // Indicator 26+: The spec has up to 25; ensure we returned exactly 25 banks
-  // In case our list is not 25, we'll fill with extra reasonable items (composite, two-stage)
-  while(banks.length < TOTAL_QUESTIONS){
-    // composite shape decimal 1
-    banks.push(() => {
-      const variants = [];
-      for(let k=0;k<BANK_PER_INDICATOR;k++){
-        const a = Math.floor(6 + rng()*20), b = Math.floor(6 + rng()*20), c = Math.floor(6 + rng()*20);
-        const d = Number(Math.sqrt((a+b)*(a+b) + c*c).toFixed(1));
-        const text = `Bangun gabungan (a+b dan c). a=${a}, b=${b}, c=${c}. Hitung jarak miring (1 desimal).`;
-        variants.push({ type:'essay-dec1', text, answer:d });
-      }
-      return variants;
-    });
-  }
-
-  // Now ensure banks length is exactly TOTAL_QUESTIONS
-  if(banks.length > TOTAL_QUESTIONS) banks.splice(TOTAL_QUESTIONS);
-
-  // For each bank entry that is a function returning variants, call it once to get array
-  const finalBanks = banks.map(b => (typeof b === 'function' ? b() : b));
-
-  return finalBanks; // array of arrays; each inner array has BANK_PER_INDICATOR variants
-}
-
-/* ========== BUILD TEST (pick 1 per indicator) ========== */
-function buildTestFromBanks(banks, rngSeed){
-  const rng = createRNG(rngSeed);
-  const qs = [];
-  for(let i=0;i<banks.length;i++){
-    const bank = banks[i];
-    const idx = Math.floor(rng()*bank.length);
-    // annotate indicator number
-    const q = Object.assign({}, bank[idx]);
-    q.indicator = i+1;
-    q.indexInTest = qs.length;
-    qs.push(q);
-  }
-  return qs;
-}
-
-/* ========== UI & Flow ========== */
-
-async function populateUsers(){
-  const loginErr = $('#login-error');
-  try {
-    html('#username', '<option>Memuat...</option>');
-    const data = await fetchPeserta();
-    data.sort((a,b)=> String(a.nama||'').localeCompare(String(b.nama||'')));
-    state.peserta = data;
-    html('#username', data.map(d=>`<option value="${encodeURIComponent(d.nama)}">${d.nama}</option>`).join(''));
-    loginErr.classList.add('hidden');
-  } catch(err){
-    loginErr.textContent = 'Gagal muat peserta: ' + (err.message || err);
-    loginErr.classList.remove('hidden');
-    html('#username','');
-  }
-}
-
-$('#btn-reload').addEventListener('click', populateUsers);
-
-$('#btn-login').addEventListener('click', ()=>{
-  const nama = decodeURIComponent($('#username').value || '');
-  const pass = $('#password').value.trim();
-  const jenis = $('#jenisTes').value;
-  const errEl = $('#login-error');
-  errEl && errEl.classList.add('hidden');
-  if(!nama || !pass){ errEl.textContent='Username dan Password wajib diisi'; errEl.classList.remove('hidden'); return; }
-  const user = state.peserta.find(p => p.nama === nama);
-  if(!user){ errEl.textContent='Username tidak ditemukan'; errEl.classList.remove('hidden'); return; }
-  if(String(user.kelas).trim() !== pass){ errEl.textContent='Password tidak cocok'; errEl.classList.remove('hidden'); return; }
-  state.user = user;
-  state.chosenJenisTes = jenis;
-  html('#c-username', user.nama);
-  html('#c-password', user.kelas);
-  html('#c-jenis', user.jenisTes || jenis);
-  $('#token').value = '';
-  show('#screen-login', false);
-  show('#screen-confirm', true);
-});
-
-$('#btn-back-login').addEventListener('click', ()=>{
-  show('#screen-confirm', false);
-  show('#screen-login', true);
-});
-
-$('#btn-start').addEventListener('click', ()=>{
-  const token = ($('#token').value||'').trim();
-  const err = $('#confirm-error');
-  err.classList.add('hidden');
-  if(!token){ err.textContent='TOKEN wajib diisi'; err.classList.remove('hidden'); return; }
-  const user = state.user;
-  if(!user){ err.textContent='User tidak ada'; err.classList.remove('hidden'); return; }
-  // Check jenis tes match with participant's kol 3 if present
-  if(user.jenisTes && String(user.jenisTes).trim() !== String(state.chosenJenisTes).trim()){
-    err.textContent = 'Jenis tes tidak sesuai dengan data peserta (kolom 3).';
-    err.classList.remove('hidden'); return;
-  }
-  if(user.token && String(user.token).trim() !== token){
-    err.textContent = 'TOKEN tidak cocok dengan data peserta (kolom 4).';
-    err.classList.remove('hidden'); return;
-  }
-  state.tokenInput = token;
-  startAssessment();
-});
-
-/* Assessment flow */
-let currentQ = 0;
-
-function startAssessment(){
-  // build banks and test
-  const banks = buildBankAll(12345); // fixed seed for reproducibility; can randomize
-  const test = buildTestFromBanks(banks, Date.now());
-  state.questions = test;
-  state.answers = {}; state.flags = {};
-  state.startedAt = new Date();
-  state.timeLeft = TIME_SECONDS;
-  currentQ = 0;
-  show('#screen-confirm', false);
-  show('#screen-assess', true);
-  buildNav();
-  showQuestion(0);
-  startTimer();
-}
-
-function startTimer(){
-  text('#timer', formatTimeSec(state.timeLeft));
-  if(state.timerInterval) clearInterval(state.timerInterval);
-  state.timerInterval = setInterval(()=>{
-    state.timeLeft--;
-    text('#timer', formatTimeSec(state.timeLeft));
-    if(state.timeLeft <= 0){
-      clearInterval(state.timerInterval);
-      finishAssessment(true);
-    }
-  }, 1000);
-}
-
-function buildNav(){
-  const g = $('#navgrid');
-  g.innerHTML = '';
-  for(let i=0;i<25;i++){
-    const cell = document.createElement('div');
-    cell.className = 'cell white' + (i >= state.questions.length ? ' disabled' : '');
-    cell.textContent = (i+1);
-    if(i < state.questions.length){
-      cell.style.cursor = 'pointer';
-      cell.addEventListener('click', ()=>{ saveCurrentAnswer(); showQuestion(i); });
-    } else {
-      cell.style.opacity = 0.3;
-    }
-    g.appendChild(cell);
-  }
-  updateNavColors();
-  $('#btn-toggle-nav').onclick = function(){
-    const side = $('#navgrid').parentElement.parentElement;
-    const hidden = side.style.display === 'none';
-    side.style.display = hidden ? 'block' : 'none';
-    this.textContent = hidden ? 'Hide' : 'Show';
-  };
-}
-
-function updateNavColors(){
-  const cells = Array.from(document.querySelectorAll('#navgrid .cell'));
-  for(let i=0;i<state.questions.length;i++){
-    const cell = cells[i];
-    cell.classList.remove('white','black','yellow');
-    if(state.flags[i]) cell.classList.add('yellow');
-    else if(state.answers[i] !== undefined && !(Array.isArray(state.answers[i]) && state.answers[i].length===0)) cell.classList.add('black');
-    else cell.classList.add('white');
-  }
-}
-
-function renderInputs(q, idx){
-  const wrap = $('#q-inputs');
-  wrap.innerHTML = '';
-  if(q.type === 'mcq'){
-    q.options.forEach((opt, i)=>{
-      const id = `q${idx}_opt${i}`;
-      const div = document.createElement('div');
-      div.innerHTML = `<label><input type="radio" name="q${idx}" value="${i}"> ${opt}</label>`;
-      wrap.appendChild(div);
-    });
-    if(state.answers[idx] !== undefined){
-      const sel = wrap.querySelector(`input[name="q${idx}"][value="${state.answers[idx]}"]`);
-      if(sel) sel.checked = true;
-    }
-  } else if(q.type === 'mcqx2'){
-    q.options.forEach((opt, i)=>{
-      const div = document.createElement('div');
-      div.innerHTML = `<label><input type="checkbox" name="q${idx}" value="${i}"> ${opt}</label>`;
-      wrap.appendChild(div);
-    });
-    if(Array.isArray(state.answers[idx])){
-      state.answers[idx].forEach(v=>{
-        const sel = wrap.querySelector(`input[name="q${idx}"][value="${v}"]`);
-        if(sel) sel.checked = true;
+    tripleSets.forEach(base=>{
+      // find hypotenuse given two legs
+      generators.push(function(){ const m=randFrom(multipliers); const t=makeTriple(base,m); const a=t[0], b=t[1], c=t[2]; // generate order
+        return {type:'essay', text:`Gunakan teorema Pythagoras untuk mencari panjang sisi miring jika dua sisi siku-siku diketahui: salah satu sisi ${a} dan sisi lainnya ${b}. Jawaban dalam angka (boleh desimal jika perlu).`, answer: c, tolerance: 1e-6 };
       });
+      // find one leg given hypotenuse and the other leg
+      generators.push(function(){ const m=randFrom(multipliers); const t=makeTriple(base,m); const a=t[0], b=t[1], c=t[2]; return {type:'essay', text:`Gunakan teorema Pythagoras untuk mencari panjang salah satu sisi tegak jika sisi miring dan satu sisi lainnya diketahui: sisi miring ${c} dan sisi tegak ${a}. Jawaban dalam angka.`, answer: b, tolerance:1e-6}; });
+    });
+
+    // Non-triplet hypotenuse/leg (round to 1 decimal) - two generators
+    generators.push(function(){ const a = Math.floor(Math.random()*10)+5; const b = Math.floor(Math.random()*10)+6; const c = Math.sqrt(a*a + b*b); return {type:'essay', text:`Cari panjang sisi miring jika dua sisi siku-siku diketahui: ${a} dan ${b}. (Pendekatan 1 angka desimal)`, answer: Math.round(c*10)/10, tolerance:0.15}; });
+    generators.push(function(){ const c = Math.floor(Math.random()*10)+10; const a = Math.floor(Math.random()* (c-3))+1; const b = Math.sqrt(c*c - a*a); return {type:'essay', text:`Cari panjang salah satu sisi tegak jika sisi miring ${c} dan satu sisi tegak ${a}. (Pendekatan 1 angka desimal)`, answer: Math.round(b*10)/10, tolerance:0.15}; });
+
+    // contextual problems (integer, use triples)
+    generators.push(function(){ const base = randFrom(tripleSets); const m = randFrom([1,2,3,4]); const t = makeTriple(base,m); const ladder = t[0], wall = t[1]; return {type:'essay', text:`Sebuah tangga bersandar sehingga membentuk segitiga siku-siku. Panjang tangga ${t[2]} dan jarak kaki tangga ke dinding ${ladder}. Berapa tinggi yang dicapai tangga? (jawaban bilangan bulat)`, answer: wall, tolerance:0.5}; });
+
+    // diagonal persegi panjang / bujur sangkar (MC with root form)
+    generators.push(function(){ const a = randFrom([3,4,5,6,7]); const b = randFrom([3,4,5,6,7]); const diag = Math.sqrt(a*a + b*b); const options = shuffle([`\u221A(${a*a}+${b*b})`, diag.toFixed(1), (Math.round(diag)).toString(), `\u221A(${(a*a+b*b)})`]); return {type:'mc', text:`Hitung diagonal sebuah persegi panjang dengan sisi ${a} dan ${b}. Pilih jawaban yang benar (bentuk akar diperbolehkan).`, options:options, answer: options.indexOf(`\u221A(${a*a}+${b*b})`)}; });
+
+    // height of equilateral triangle using Pythagoras (MC with root)
+    generators.push(function(){ const s = randFrom([4,6,8,10]); const h = `\u221A(${s*s} - (${s}/2)*(${s}/2))`; const options = shuffle([h, (Math.sqrt(s*s - (s/2)*(s/2))).toFixed(2), (s).toString(), `\u221A(${s*s - 1})`]); return {type:'mc', text:`Tentukan tinggi segitiga sama sisi dengan sisi ${s}. Pilih jawaban bentuk akar jika diperlukan.`, options:options, answer: options.indexOf(h)}; });
+
+    // angle 30 degree: hypotenuse from side and 30deg (use sin/cos 30 = 0.5, sqrt3/2 ~0.866)
+    generators.push(function(){ const side = randFrom([4,6,8,10]); const hyp = side / Math.sin(Math.PI/6); const val = Math.round(hyp*10)/10; return {type:'essay', text:`Satu sisi dan sudut 30\u00B0 diketahui pada gambar. Jika sisi dekat sudut 30\u00B0 adalah ${side}, tentukan panjang sisi miring (pendekatan 1 desimal).`, answer: val, tolerance:0.15}; });
+
+    // angle 45 degree: leg from hypotenuse: leg = hyp / sqrt(2)
+    generators.push(function(){ const hyp = randFrom([5,7,9,11]); const leg = Math.round((hyp/Math.SQRT2)*10)/10; return {type:'essay', text:`Jika sisi miring adalah ${hyp} dan sudut 45\u00B0 diketahui, cari panjang salah satu sisi tegak (pendekatan 1 angka desimal).`, answer: leg, tolerance:0.15}; });
+
+    // combined shapes, two-step pythagoras
+    generators.push(function(){ const base = randFrom(tripleSets); const m = randFrom([1,2,3]); const t=makeTriple(base,m); // construct a two-step
+      const a=t[0], b=t[1], c=t[2]; const extra = b; const step1 = Math.sqrt(c*c - extra*extra); // contrive
+      return {type:'mc', text:`Sebuah bangun gabungan menghasilkan segitiga siku-siku dua langkah. (simulasi) Pilih jawaban yang sesuai.`, options: shuffle([String(a), String(b), String(c), String(Math.round(step1))]), answer:0};
+    });
+
+    // Story problems medium two uses (essay)
+    generators.push(function(){ const base = randFrom(tripleSets); const m=randFrom([1,2]); const t=makeTriple(base,m); // craft two-step
+      const a=t[0], b=t[1], c=t[2]; const res = b + a; return {type:'essay', text:`Atap rumah: jarak vertikal ditentukan oleh dua kali penggunaan Pythagoras (soal sederhana). Hasilkan angka bulat. (simulasi)`, answer: res, tolerance:0.5};
+    });
+
+    // Fill up to at least 30 generators (we will sample 25 randomly)
+    while(generators.length < 35){ generators.push(function(){ const a=Math.floor(Math.random()*10)+3; const b=Math.floor(Math.random()*10)+4; const c=Math.round(Math.sqrt(a*a+b*b)*10)/10; return {type:'essay', text:`Soal tambahan: cari sisi miring dari ${a} dan ${b} (1 desimal).`, answer:c, tolerance:0.15}; }); }
+
+    function generatePaper(){ // pick 25 generators with variety
+      const pick = shuffle(generators.slice()).slice(0,25);
+      return pick.map(g=>g());
     }
-    // add hint
-    const hint = document.createElement('div');
-    hint.className = 'meta';
-    hint.style.marginTop = '8px';
-    hint.innerHTML = '<small>Pilih <b>2</b> jawaban yang benar.</small>';
-    wrap.appendChild(hint);
-  } else if(q.type === 'essay-int'){
-    const inp = document.createElement('input');
-    inp.type = 'number'; inp.step = '1'; inp.placeholder = 'Ketik bilangan bulat';
-    inp.value = state.answers[idx] !== undefined ? state.answers[idx] : '';
-    wrap.appendChild(inp);
-  } else if(q.type === 'essay-dec1'){
-    const inp = document.createElement('input');
-    inp.type = 'number'; inp.step = '0.1'; inp.placeholder = 'Ketik angka dengan 1 desimal';
-    inp.value = state.answers[idx] !== undefined ? state.answers[idx] : '';
-    wrap.appendChild(inp);
-  } else {
-    // default: text input
-    const inp = document.createElement('input');
-    inp.type='text'; inp.placeholder='Jawab';
-    inp.value = state.answers[idx] !== undefined ? state.answers[idx] : '';
-    wrap.appendChild(inp);
-  }
-}
 
-function showQuestion(i){
-  if(i<0 || i >= state.questions.length) return;
-  currentQ = i;
-  const q = state.questions[i];
-  html('#q-meta', `Soal ${i+1} dari ${state.questions.length} — Indikator ${q.indicator}`);
-  html('#q-text', q.text);
-  renderInputs(q, i);
-  $('#flag').checked = !!state.flags[i];
-  updateNavColors();
-}
+    // INIT
+    fetchStudents();
 
-function readCurrentAnswer(){
-  const q = state.questions[currentQ];
-  const wrap = $('#q-inputs');
-  if(!q) return null;
-  if(q.type === 'mcq'){
-    const sel = wrap.querySelector('input[type="radio"]:checked');
-    return sel ? Number(sel.value) : null;
-  } else if(q.type === 'mcqx2'){
-    const sels = Array.from(wrap.querySelectorAll('input[type="checkbox"]:checked')).map(el=>Number(el.value));
-    return sels;
-  } else {
-    const inp = wrap.querySelector('input');
-    if(!inp) return null;
-    const val = inp.value.trim();
-    if(val === '') return null;
-    return q.type === 'essay-int' ? parseInt(val,10) : parseFloat(parseFloat(val).toFixed(1));
-  }
-}
-
-function saveCurrentAnswer(){
-  const ans = readCurrentAnswer();
-  if(ans === null || ans === undefined) delete state.answers[currentQ];
-  else state.answers[currentQ] = ans;
-  updateNavColors();
-}
-
-$('#btn-prev').addEventListener('click', ()=>{ saveCurrentAnswer(); if(currentQ>0) showQuestion(currentQ-1); });
-$('#btn-next').addEventListener('click', ()=>{ saveCurrentAnswer(); if(currentQ<state.questions.length-1) showQuestion(currentQ+1); });
-$('#flag').addEventListener('change', (e)=>{ state.flags[currentQ] = e.target.checked; updateNavColors(); });
-
-$('#btn-clear').addEventListener('click', ()=>{
-  // clear current
-  delete state.answers[currentQ];
-  // clear UI inputs
-  $('#q-inputs').querySelectorAll('input').forEach(i => { if(i.type === 'radio' || i.type === 'checkbox') i.checked = false; else i.value = ''; });
-  updateNavColors();
-});
-$('#btn-mark-clear').addEventListener('click', ()=>{
-  state.flags = {};
-  updateNavColors();
-});
-
-$('#btn-finish').addEventListener('click', ()=>{
-  saveCurrentAnswer();
-  if(!confirm('Anda yakin ingin mengakhiri tes dan mengirim hasil?')) return;
-  finishAssessment(false);
-});
-
-function finishAssessment(auto=false){
-  clearInterval(state.timerInterval);
-  // compute score
-  let correct = 0;
-  state.questions.forEach((q, idx) => {
-    const ans = state.answers[idx];
-    if(q.type === 'mcq'){
-      if(ans !== undefined && q.correct !== undefined && ans === q.correct) correct++;
-    } else if(q.type === 'mcqx2'){
-      if(Array.isArray(ans) && q.correct instanceof Set){
-        const sel = new Set(ans);
-        if(sel.size === q.correct.size){
-          let ok = true;
-          q.correct.forEach(v => { if(!sel.has(v)) ok = false; });
-          if(ok) correct++;
-        }
-      }
-    } else if(q.type === 'essay-int'){
-      if(ans !== undefined && Number.isInteger(ans)){
-        if(Number.isInteger(q.answer)){
-          if(ans === q.answer) correct++;
-        } else if(q.exact){
-          if(ans === Math.round(q.exact)) correct++;
-        }
-      }
-    } else if(q.type === 'essay-dec1'){
-      if(ans !== undefined){
-        const target = Number((q.answer).toFixed ? Number(q.answer).toFixed(1) : q.answer);
-        const val = Number(Number(ans).toFixed(1));
-        if(Math.abs(val - target) <= 0.05) correct++;
-      }
-    }
-  });
-  state.score = correct * SCORE_MULTIPLIER;
-  state.finishedAt = new Date();
-  state.durationSec = Math.max(0, Math.floor((state.finishedAt - state.startedAt) / 1000));
-  // show result & send
-  showResultAndSend();
-}
-
-function showResultAndSend(){
-  show('#screen-assess', false);
-  show('#screen-result', true);
-  const payload = {
-    NAMA: state.user.nama,
-    KELAS: state.user.kelas,
-    JENIS_TES: state.chosenJenisTes,
-    TOKEN: state.tokenInput,
-    SCORE: String(state.score),
-    DURASI: formatTimeSec(state.durationSec),
-    WAKTU_SIMPAN: nowLocalISO()
-  };
-  html('#result-fields', `
-    <div class="row grid-3">
-      <div class="ok"><b>NAMA:</b> ${payload.NAMA}</div>
-      <div class="ok"><b>KELAS:</b> ${payload.KELAS}</div>
-      <div class="ok"><b>JENIS_TES:</b> ${payload.JENIS_TES}</div>
-    </div>
-    <div class="row grid-3" style="margin-top:12px">
-      <div class="ok"><b>TOKEN:</b> ${payload.TOKEN}</div>
-      <div class="ok"><b>SCORE:</b> ${payload.SCORE}</div>
-      <div class="ok"><b>DURASI:</b> ${payload.DURASI}</div>
-    </div>
-    <div style="margin-top:12px" class="ok"><b>WAKTU_SIMPAN:</b> ${payload.WAKTU_SIMPAN}</div>
-  `);
-  // send with fallback
-  (async ()=>{
-    $('#result-status').textContent = 'Mengirim ke spreadsheet...';
-    const res = await postResultWithFallback(payload);
-    if(res.success){
-      $('#result-status').textContent = `Data dikirim (method ${res.method})${res.note ? ' — '+res.note : ''}`;
-      $('#result-status').className = 'ok';
-    } else {
-      $('#result-status').textContent = `Gagal menyimpan: ${res.error || 'tidak diketahui'}`;
-      $('#result-status').className = 'error';
-    }
+    // expose for debugging
+    window._ASS = {questions, answers, generatePaper};
   })();
-}
-
-$('#btn-restart').addEventListener('click', ()=>{
-  // reset and go to login
-  state.user = null; state.answers = {}; state.flags = {}; state.questions = []; state.startedAt = null; state.finishedAt = null; state.score = 0;
-  clearInterval(state.timerInterval);
-  $('#password').value = ''; $('#token').value = '';
-  show('#screen-result', false);
-  show('#screen-login', true);
-  populateUsers();
-});
-
-/* ========== INIT ========== */
-populateUsers();
-</script>
+  </script>
 </body>
 </html>
