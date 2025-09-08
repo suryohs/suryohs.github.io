@@ -20,11 +20,12 @@
     <h2>Login</h2>
     <label>Username:</label>
     <select id="username"></select><br><br>
-    <label>Password:</label>
+    <label>Password (isi dengan KELAS sesuai sheet):</label>
     <input type="password" id="password"><br><br>
     <label>Jenis Tes:</label>
+    <!-- gunakan label lengkap agar cocok dengan data di sheet -->
     <select id="jenisTes">
-      <option value="AS02">AS02. PYTHAGORAS</option>
+      <option value="AS02. PYTHAGORAS">AS02. PYTHAGORAS</option>
     </select><br><br>
     <button onclick="login()">Login</button>
     <p id="loginError" class="error"></p>
@@ -62,60 +63,107 @@
     let pesertaData = [];
     let currentUser = null;
 
-    // Ambil data siswa dari Google Script
+    // Ambil data siswa dari Google Script dan standardisasi bentuk datanya
     async function loadUsernames() {
       try {
         const res = await fetch(apiUrl);
         const json = await res.json();
-        if (json.success) {
-          pesertaData = json.data;
-          const select = document.getElementById("username");
-          select.innerHTML = "";
-          pesertaData.sort((a, b) => a.nama.localeCompare(b.nama));
-          pesertaData.forEach(p => {
-            const opt = document.createElement("option");
-            opt.value = p.nama;
-            opt.textContent = p.nama;
-            select.appendChild(opt);
-          });
-        } else {
-          document.getElementById("loginError").textContent = "Gagal memuat data peserta.";
-        }
+        console.log('GET response:', json);
+        let raw = [];
+        if (json && json.success && Array.isArray(json.data)) raw = json.data;
+        else if (Array.isArray(json)) raw = json; // fallback
+
+        // Standardisasi setiap baris menjadi object {nama, kelas, jenisTes, token}
+        pesertaData = raw.map(r => {
+          if (Array.isArray(r)) {
+            return {
+              nama: String(r[0] || '').trim(),
+              kelas: String(r[1] || '').trim(),
+              jenisTes: String(r[2] || '').trim(),
+              token: String(r[3] || '').trim()
+            };
+          } else {
+            return {
+              nama: String(r.nama || r.NAMA || r.name || '').trim(),
+              kelas: String(r.kelas || r.KELAS || r.class || r.kelas || '').trim(),
+              jenisTes: String(r.jenisTes || r.JENIS_TES || r.jenis_tes || r.testType || '').trim(),
+              token: String(r.token || r.TOKEN || r.Token || '').trim()
+            };
+          }
+        }).filter(x => x.nama);
+
+        // Urutkan abjad dan isi dropdown
+        pesertaData.sort((a, b) => a.nama.localeCompare(b.nama));
+        const select = document.getElementById("username");
+        select.innerHTML = '<option value="">-- pilih username --</option>';
+        pesertaData.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.nama;
+          opt.textContent = p.nama;
+          select.appendChild(opt);
+        });
+
+        console.log('Peserta (sample):', pesertaData.slice(0,6));
       } catch (e) {
-        document.getElementById("loginError").textContent = "Tidak bisa terhubung ke server.";
+        console.error('loadUsernames error', e);
+        document.getElementById("loginError").textContent = "Tidak bisa terhubung ke server atau data tidak sesuai format.";
       }
     }
 
     loadUsernames();
 
     function login() {
+      document.getElementById('loginError').textContent = '';
       const nama = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
-      const jenisTes = document.getElementById("jenisTes").value;
+      const password = document.getElementById("password").value.trim();
+      const jenisTes = document.getElementById("jenisTes").value.trim();
 
-      const user = pesertaData.find(u => u.nama === nama && u.kelas === password);
+      if (!nama) { document.getElementById('loginError').textContent = 'Pilih username.'; return; }
+      if (!password) { document.getElementById('loginError').textContent = 'Isi password (kelas).'; return; }
+
+      // Cari berdasarkan nama dan kelas (password)
+      const user = pesertaData.find(u => String(u.nama).trim() === String(nama).trim() && String(u.kelas).trim() === String(password).trim());
       if (user) {
-        currentUser = { nama, kelas: password, jenisTes };
+        currentUser = { nama: user.nama, kelas: user.kelas, jenisTes };
         document.getElementById("page-login").classList.add("hidden");
         document.getElementById("page-konfirmasi").classList.remove("hidden");
-        document.getElementById("konfNama").textContent = nama;
-        document.getElementById("konfKelas").textContent = password;
-        document.getElementById("konfTes").textContent = jenisTes;
+        document.getElementById("konfNama").textContent = currentUser.nama;
+        document.getElementById("konfKelas").textContent = currentUser.kelas;
+        document.getElementById("konfTes").textContent = currentUser.jenisTes;
       } else {
         document.getElementById("loginError").textContent = "Username atau password salah.";
       }
     }
 
     function konfirmasiToken() {
-      const token = document.getElementById("tokenInput").value;
-      const user = pesertaData.find(u => u.nama === currentUser.nama && u.token === token && u.jenisTes === currentUser.jenisTes);
-      if (user) {
+      document.getElementById('tokenError').textContent = '';
+      const token = document.getElementById("tokenInput").value.trim();
+      if (!token) { document.getElementById('tokenError').textContent = 'Token wajib diisi.'; return; }
+      if (!currentUser) { document.getElementById('tokenError').textContent = 'User belum login.'; return; }
+
+      console.log('Validating token:', { token, currentUser });
+
+      // Cari peserta dengan kecocokan nama, jenis tes dan token.
+      // Perbandingan jenisTes dibuat toleran (cocokkan full string atau include) dan token dibandingkan sebagai string.
+      const matched = pesertaData.find(u => {
+        if (String(u.nama).trim() !== String(currentUser.nama).trim()) return false;
+        const uJenis = String(u.jenisTes || '').trim().toLowerCase();
+        const cJenis = String(currentUser.jenisTes || '').trim().toLowerCase();
+        const jenisMatch = (uJenis === cJenis) || (uJenis.includes(cJenis)) || (cJenis.includes(uJenis));
+        const tokenMatch = String(u.token || '').trim() === String(token).trim();
+        return jenisMatch && tokenMatch;
+      });
+
+      console.log('Matched entry:', matched);
+
+      if (matched) {
+        // valid
         currentUser.token = token;
         document.getElementById("page-konfirmasi").classList.add("hidden");
         document.getElementById("page-asesmen").classList.remove("hidden");
         startAsesmen();
       } else {
-        document.getElementById("tokenError").textContent = "Token tidak sesuai.";
+        document.getElementById('tokenError').textContent = 'Token tidak cocok untuk user/jenis tes.';
       }
     }
 
@@ -142,7 +190,7 @@
       clearInterval(timerInterval);
       const endTime = new Date();
       const durasi = Math.floor((endTime - startTime) / 1000);
-      const score = 100; // placeholder
+      const score = 0; // sementara placeholder, logika penilaian diisi sesuai kebutuhan
       const data = {
         NAMA: currentUser.nama,
         KELAS: currentUser.kelas,
@@ -157,6 +205,7 @@
       document.getElementById("page-result").classList.remove("hidden");
       document.getElementById("hasil").textContent = JSON.stringify(data, null, 2);
 
+      // Kirim hasil ke server (Anda punya 3 metode di file awal; di sini panggil POST JSON sebagai default)
       sendData(data);
     }
 
@@ -167,8 +216,9 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
+        console.log('Result sent');
       } catch (e) {
-        console.error("Gagal kirim data", e);
+        console.error('Gagal kirim data', e);
       }
     }
   </script>
