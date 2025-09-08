@@ -1,1 +1,466 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kuiz: Himpunan (SET)</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#06b6d4; --muted:#94a3b8; --card-2:#0b1622;
+      --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0; background: linear-gradient(180deg,#071322 0%, #041427 100%);
+      color: #e6eef6; padding:28px;
+    }
+    .container{max-width:980px;margin:0 auto}
+    header{display:flex;gap:16px;align-items:center;margin-bottom:18px}
+    .logo{
+      width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#7c3aed);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#021023;
+      box-shadow: 0 6px 20px rgba(6,182,212,0.12);
+      font-size:20px;
+    }
+    h1{margin:0;font-size:20px}
+    p.lead{margin:4px 0 0;color:var(--muted)}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;padding:18px;margin-top:12px;box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+    }
+    .q{
+      padding:14px;border-radius:10px;background:var(--glass);margin-bottom:12px;
+      display:block;
+    }
+    .q h3{margin:0 0 8px;font-size:15px;color:#eaf6fb}
+    .options{display:flex;flex-direction:column;gap:8px}
+    label.opt{
+      display:flex;gap:12px;align-items:flex-start;padding:10px;border-radius:8px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.006), rgba(255,255,255,0.002));
+      border:1px solid rgba(255,255,255,0.03);cursor:pointer;
+    }
+    label.opt input{margin-top:3px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+    button{
+      border:0;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;
+      background:var(--accent); color:#021023;
+      box-shadow: 0 8px 20px rgba(6,182,212,0.12);
+    }
+    button.ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04)}
+    .meta{color:var(--muted);font-size:13px;margin-left:auto}
+    .result{margin-top:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);color:#dff8ff}
+    .answers{margin-top:10px;font-size:14px;color:var(--muted)}
+    .small{font-size:13px;color:var(--muted)}
+    @media (max-width:640px){
+      header{flex-direction:column;align-items:flex-start}
+      .meta{margin-left:0;margin-top:8px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">H</div>
+      <div>
+        <h1>Kuiz: Himpunan (SET)</h1>
+        <p class="lead">Soal diambil dari file yang Anda unggah. Isi jawaban lalu tekan <strong>Submit</strong>. Untuk menampilkan kunci, tekan <em>Tampilkan Kunci</em> (kunci perlu diisi/konfirmasi oleh guru jika belum tersedia).</p>
+      </div>
+      <div class="meta">Total soal: <strong id="totalCount">25</strong></div>
+    </header>
+
+    <form id="quizForm" class="card" onsubmit="return false;">
+      <!-- Soal 1 -->
+      <div class="q" data-q="1">
+        <h3>1. Pernyataan berikut yang disebut himpunan adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q1" value="A"> A. A set of the big animals</label>
+          <label class="opt"><input type="radio" name="q1" value="B"> B. A set of the long hair woman</label>
+          <label class="opt"><input type="radio" name="q1" value="C"> C. A set of the smart kids</label>
+          <label class="opt"><input type="radio" name="q1" value="D"> D. A set of the kitchen tool</label>
+        </div>
+      </div>
+
+      <!-- Soal 2 -->
+      <div class="q" data-q="2">
+        <h3>2. Given {1,2,3,4,5,6}. The subset of {1,3} is …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q2" value="A"> A. {1,3}</label>
+          <label class="opt"><input type="radio" name="q2" value="B"> B. {2,4}</label>
+          <label class="opt"><input type="radio" name="q2" value="C"> C. {3,5}</label>
+          <label class="opt"><input type="radio" name="q2" value="D"> D. {4,6}</label>
+        </div>
+      </div>
+
+      <!-- Soal 3 -->
+      <div class="q" data-q="3">
+        <h3>3. Cardinal number of a set is represented by n(A). Then n(A) = …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q3" value="A"> A. 7</label>
+          <label class="opt"><input type="radio" name="q3" value="B"> B. 6</label>
+          <label class="opt"><input type="radio" name="q3" value="C"> C. 5</label>
+          <label class="opt"><input type="radio" name="q3" value="D"> D. 4</label>
+        </div>
+      </div>
+
+      <!-- Soal 4 -->
+      <div class="q" data-q="4">
+        <h3>4. The element of set A is … (soal di dokumen tidak lengkap; lengkapi jika perlu)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q4" value="A"> A. Pilihan 1</label>
+          <label class="opt"><input type="radio" name="q4" value="B"> B. Pilihan 2</label>
+          <label class="opt"><input type="radio" name="q4" value="C"> C. Pilihan 3</label>
+          <label class="opt"><input type="radio" name="q4" value="D"> D. Pilihan 4</label>
+        </div>
+      </div>
+
+      <!-- Soal 5 (Venn picture question - represented textually) -->
+      <div class="q" data-q="5">
+        <h3>5. Pada diagram Venn (arsir pada area tertentu). Daerah yang diarsir adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q5" value="A"> A. A ∪ B</label>
+          <label class="opt"><input type="radio" name="q5" value="B"> B. A ∩ B</label>
+          <label class="opt"><input type="radio" name="q5" value="C"> C. A \ B (A difference B)</label>
+          <label class="opt"><input type="radio" name="q5" value="D"> D. A' (complement of A)</label>
+        </div>
+      </div>
+
+      <!-- Soal 6 -->
+      <div class="q" data-q="6">
+        <h3>6. Pernyataan berikut yang benar adalah … (lengkapi sesuai catatan guru)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q6" value="A"> A. Pernyataan 1</label>
+          <label class="opt"><input type="radio" name="q6" value="B"> B. Pernyataan 2</label>
+          <label class="opt"><input type="radio" name="q6" value="C"> C. Pernyataan 3</label>
+          <label class="opt"><input type="radio" name="q6" value="D"> D. Pernyataan 4</label>
+        </div>
+      </div>
+
+      <!-- Soal 7 -->
+      <div class="q" data-q="7">
+        <h3>7. Banyaknya himpunan bagian dari himpunan bilangan bulat antara 98 dan 101 adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q7" value="A"> A. 3</label>
+          <label class="opt"><input type="radio" name="q7" value="B"> B. 4</label>
+          <label class="opt"><input type="radio" name="q7" value="C"> C. 5</label>
+          <label class="opt"><input type="radio" name="q7" value="D"> D. 6</label>
+        </div>
+      </div>
+
+      <!-- Soal 8 -->
+      <div class="q" data-q="8">
+        <h3>8. Banyaknya anggota himpunan bilangan asli kelipatan 4 dari ... sampai ... adalah … (sesuaikan rentang)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q8" value="A"> A. 4</label>
+          <label class="opt"><input type="radio" name="q8" value="B"> B. 5</label>
+          <label class="opt"><input type="radio" name="q8" value="C"> C. 7</label>
+          <label class="opt"><input type="radio" name="q8" value="D"> D. 8</label>
+        </div>
+      </div>
+
+      <!-- Soal 9 -->
+      <div class="q" data-q="9">
+        <h3>9. Himpunan semesta yang mungkin dari P = {0,1,3,5} adalah ...</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q9" value="A"> A. Himpunan bilangan cacah</label>
+          <label class="opt"><input type="radio" name="q9" value="B"> B. Himpunan bilangan asli</label>
+          <label class="opt"><input type="radio" name="q9" value="C"> C. Himpunan bilangan genap</label>
+          <label class="opt"><input type="radio" name="q9" value="D"> D. Himpunan bilangan ganjil</label>
+        </div>
+      </div>
+
+      <!-- Soal 10 -->
+      <div class="q" data-q="10">
+        <h3>10. Jika ... maka ... (soal rusak/tidak lengkap di dokumen; lengkapi bila perlu)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q10" value="A"> A. Pilihan A</label>
+          <label class="opt"><input type="radio" name="q10" value="B"> B. Pilihan B</label>
+          <label class="opt"><input type="radio" name="q10" value="C"> C. Pilihan C</label>
+          <label class="opt"><input type="radio" name="q10" value="D"> D. Pilihan D</label>
+        </div>
+      </div>
+
+      <!-- Soal 11 -->
+      <div class="q" data-q="11">
+        <h3>11. Dengan P = {pelajar}, T = {pelajar berbaju putih}, G = {pemuda berambut gondrong}. Pernyataan berikut yang benar adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q11" value="A"> A. Semua pemuda berambut gondrong yang bukan pelajar ada yang berbaju putih</label>
+          <label class="opt"><input type="radio" name="q11" value="B"> B. Pelajar yang tidak berbaju putih tidak ada yang berambut gondrong</label>
+          <label class="opt"><input type="radio" name="q11" value="C"> C. Ada pelajar yang tidak berambut gondrong dan tidak berbaju putih</label>
+          <label class="opt"><input type="radio" name="q11" value="D"> D. Semua pemuda berambut gondrong yang tidak berbaju putih bukan pelajar</label>
+        </div>
+      </div>
+
+      <!-- Soal 12 -->
+      <div class="q" data-q="12">
+        <h3>12. Kedua himpunan yang berkedudukan saling lepas adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q12" value="A"> A. Himpunan angka pada dadu dan himpunan angka pada tombol kalkulator</label>
+          <label class="opt"><input type="radio" name="q12" value="B"> B. Himpunan pria dan himpunan wanita</label>
+          <label class="opt"><input type="radio" name="q12" value="C"> C. Himpunan pelajar dan himpunan pekerja</label>
+          <label class="opt"><input type="radio" name="q12" value="D"> D. Himpunan segitiga sama kaki dan himpunan segitiga siku-siku</label>
+        </div>
+      </div>
+
+      <!-- Soal 13 -->
+      <div class="q" data-q="13">
+        <h3>13. Banyaknya siswa kelas 7-V adalah 40. Suka matematika 25, suka fisika 20, tidak suka keduanya 10. Banyak yang suka keduanya adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q13" value="A"> A. 0</label>
+          <label class="opt"><input type="radio" name="q13" value="B"> B. 5</label>
+          <label class="opt"><input type="radio" name="q13" value="C"> C. 10</label>
+          <label class="opt"><input type="radio" name="q13" value="D"> D. 15</label>
+        </div>
+      </div>
+
+      <!-- Soal 14 -->
+      <div class="q" data-q="14">
+        <h3>14. H = {huruf pembentuk kata INTERNASIONAL}. Jika himpunan M dinyatakan metode rooster maka …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q14" value="A"> A. {I,N,T,E,R,N,A,S,I,O,N,A,L}</label>
+          <label class="opt"><input type="radio" name="q14" value="B"> B. {I,N,A,S,I,O,N,A,L}</label>
+          <label class="opt"><input type="radio" name="q14" value="C"> C. {I,N,T,E,R,A,S,O,L}</label>
+          <label class="opt"><input type="radio" name="q14" value="D"> D. {I,N,T,E,R,N,A,L}</label>
+        </div>
+      </div>
+
+      <!-- Soal 15 -->
+      <div class="q" data-q="15">
+        <h3>15. Dari beberapa anak remaja: 25 suka susu, 20 suka kopi, 12 suka keduanya. Anak yang suka susu saja adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q15" value="A"> A. 25</label>
+          <label class="opt"><input type="radio" name="q15" value="B"> B. 13</label>
+          <label class="opt"><input type="radio" name="q15" value="C"> C. 8</label>
+          <label class="opt"><input type="radio" name="q15" value="D"> D. 5</label>
+        </div>
+      </div>
+
+      <!-- Soal 16 -->
+      <div class="q" data-q="16">
+        <h3>16. Diketahui S = {0,1,2,...,12}, A={0,2,4,6,8,12}, C={1,4,9}, D={1,2,3,4,5}. Pertanyaan terkait himpunan ... (lengkapi sesuai kebutuhan)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q16" value="A"> A. Pilihan A</label>
+          <label class="opt"><input type="radio" name="q16" value="B"> B. Pilihan B</label>
+          <label class="opt"><input type="radio" name="q16" value="C"> C. Pilihan C</label>
+          <label class="opt"><input type="radio" name="q16" value="D"> D. Pilihan D</label>
+        </div>
+      </div>
+
+      <!-- Soal 17 -->
+      <div class="q" data-q="17">
+        <h3>17. Perhatikan gambar berikut. Daerah yang diarsir adalah daerah himpunan … (gambar tidak tersedia)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q17" value="A"> A. Pilihan 1</label>
+          <label class="opt"><input type="radio" name="q17" value="B"> B. Pilihan 2</label>
+          <label class="opt"><input type="radio" name="q17" value="C"> C. Pilihan 3</label>
+          <label class="opt"><input type="radio" name="q17" value="D"> D. Pilihan 4</label>
+        </div>
+      </div>
+
+      <!-- Soal 18 -->
+      <div class="q" data-q="18">
+        <h3>18. Perhatikan diagram Venn berikut. (Soal berhubungan dengan nomor 21 di dokumen)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q18" value="A"> A. {1,7,9}</label>
+          <label class="opt"><input type="radio" name="q18" value="B"> B. {3,4}</label>
+          <label class="opt"><input type="radio" name="q18" value="C"> C. {2,3,4,5,6,8,10}</label>
+          <label class="opt"><input type="radio" name="q18" value="D"> D. {1,2,3,4,5,6,7,8,9,10}</label>
+        </div>
+      </div>
+
+      <!-- Soal 19 -->
+      <div class="q" data-q="19">
+        <h3>19. Banyaknya yang menjadi anggota himpunan A adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q19" value="A"> A. 8</label>
+          <label class="opt"><input type="radio" name="q19" value="B"> B. 4</label>
+          <label class="opt"><input type="radio" name="q19" value="C"> C. 1</label>
+          <label class="opt"><input type="radio" name="q19" value="D"> D. 0</label>
+        </div>
+      </div>
+
+      <!-- Soal 20 -->
+      <div class="q" data-q="20">
+        <h3>20. Berikut yang BUKAN anggota Himpunan A adalah … (lengkapi sesuai gambar/dokumen)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q20" value="A"> A. Pilihan A</label>
+          <label class="opt"><input type="radio" name="q20" value="B"> B. Pilihan B</label>
+          <label class="opt"><input type="radio" name="q20" value="C"> C. Pilihan C</label>
+          <label class="opt"><input type="radio" name="q20" value="D"> D. Pilihan D</label>
+        </div>
+      </div>
+
+      <!-- Soal 21 -->
+      <div class="q" data-q="21">
+        <h3>21. Pak Suryo melempar dua dadu merah & putih. Hasil pelemparan dicatat sebagai himpunan D. Banyak anggota himpunan D adalah …</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q21" value="A"> A. 3</label>
+          <label class="opt"><input type="radio" name="q21" value="B"> B. 6</label>
+          <label class="opt"><input type="radio" name="q21" value="C"> C. 18</label>
+          <label class="opt"><input type="radio" name="q21" value="D"> D. 36</label>
+        </div>
+      </div>
+
+      <!-- Soal 22-25: placeholder untuk melengkapi menjadi 25 soal -->
+      <div class="q" data-q="22">
+        <h3>22. (Soal tambahan — lengkapi sesuai kebutuhan)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q22" value="A"> A. Pilihan A</label>
+          <label class="opt"><input type="radio" name="q22" value="B"> B. Pilihan B</label>
+          <label class="opt"><input type="radio" name="q22" value="C"> C. Pilihan C</label>
+          <label class="opt"><input type="radio" name="q22" value="D"> D. Pilihan D</label>
+        </div>
+      </div>
+
+      <div class="q" data-q="23">
+        <h3>23. (Soal tambahan — lengkapi sesuai kebutuhan)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q23" value="A"> A. Pilihan A</label>
+          <label class="opt"><input type="radio" name="q23" value="B"> B. Pilihan B</label>
+          <label class="opt"><input type="radio" name="q23" value="C"> C. Pilihan C</label>
+          <label class="opt"><input type="radio" name="q23" value="D"> D. Pilihan D</label>
+        </div>
+      </div>
+
+      <div class="q" data-q="24">
+        <h3>24. (Soal tambahan — lengkapi sesuai kebutuhan)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q24" value="A"> A. Pilihan A</label>
+          <label class="opt"><input type="radio" name="q24" value="B"> B. Pilihan B</label>
+          <label class="opt"><input type="radio" name="q24" value="C"> C. Pilihan C</label>
+          <label class="opt"><input type="radio" name="q24" value="D"> D. Pilihan D</label>
+        </div>
+      </div>
+
+      <div class="q" data-q="25">
+        <h3>25. (Soal tambahan — lengkapi sesuai kebutuhan)</h3>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q25" value="A"> A. Pilihan A</label>
+          <label class="opt"><input type="radio" name="q25" value="B"> B. Pilihan B</label>
+          <label class="opt"><input type="radio" name="q25" value="C"> C. Pilihan C</label>
+          <label class="opt"><input type="radio" name="q25" value="D"> D. Pilihan D</label>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="submitBtn" type="button">Submit</button>
+        <button id="resetBtn" class="ghost" type="button">Reset Pilihan</button>
+        <button id="showKeyBtn" class="ghost" type="button">Tampilkan Kunci</button>
+        <div class="meta small">Isi kunci jawaban di variabel <code>answerKey</code> pada JavaScript bila ingin auto-cek.</div>
+      </div>
+
+      <div id="result" class="result" style="display:none"></div>
+      <div id="answerList" class="answers" style="display:none"></div>
+    </form>
+
+    <p class="small" style="margin-top:12px;color:var(--muted)">
+      Catatan: beberapa soal di dokumen asli tidak lengkap atau berupa gambar (diagram Venn) — saya masukkan pertanyaan tempatnya dan opsi sesuai transkrip. Jika Anda mau, saya bisa:
+      <ul>
+        <li>isi kunci jawaban dan aktifkan penilaian otomatis,</li>
+        <li>mengganti placeholder soal 4,10,16,17,20 dengan teks/gambar lengkap,</li>
+        <li>atau membuat versi Google Forms / App Script.</li>
+      </ul>
+    </p>
+  </div>
+
+  <script>
+    // === Jawaban kunci (kosong = guru isi) ===
+    // Format: "q1":"A", "q2":"C", ...
+    const answerKey = {
+      // contoh: q13: "B"
+      // Isi kunci di sini jika Anda punya; jika tetap kosong fungsi "Tampilkan Kunci" akan menandakan belum diset.
+      // Contoh terisi: q13: "B", q21: "C"
+    };
+
+    const total = 25;
+    document.getElementById('totalCount').textContent = total;
+
+    function collectAnswers() {
+      const answers = {};
+      for (let i=1;i<=total;i++){
+        const name = 'q'+i;
+        const el = document.querySelector('input[name="'+name+'"]:checked');
+        answers[name] = el ? el.value : null;
+      }
+      return answers;
+    }
+
+    function countAnswered(answers){
+      return Object.values(answers).filter(v=>v!==null).length;
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', ()=>{
+      const answers = collectAnswers();
+      const answered = countAnswered(answers);
+      const resultBox = document.getElementById('result');
+      resultBox.style.display = 'block';
+      resultBox.innerHTML = `<strong>Jawaban terisi:</strong> ${answered} dari ${total} soal.`;
+      // Jika kunci ada, hitung skor
+      const keys = Object.keys(answerKey);
+      if(keys.length){
+        let correct = 0;
+        for(const [k,v] of Object.entries(answerKey)){
+          if(answers[k] === v) correct++;
+        }
+        resultBox.innerHTML += `<br><strong>Skor (berdasarkan kunci):</strong> ${correct} / ${total} (${Math.round(correct/total*100)}%)`;
+      } else {
+        resultBox.innerHTML += `<br><span style="color:#9fd6e0">Kunci belum diisi — tekan "Tampilkan Kunci" untuk mengelola kunci jawaban.</span>`;
+      }
+      // tampilkan ringkasan jawaban
+      const list = document.getElementById('answerList');
+      list.style.display = 'block';
+      list.innerHTML = '<strong>Daftar jawaban Anda:</strong><br>' + Object.entries(answers).map(([k,v])=> `${k}: ${v||'-'}`).join(' · ');
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+      document.getElementById('result').style.display='none';
+      document.getElementById('answerList').style.display='none';
+    });
+
+    document.getElementById('showKeyBtn').addEventListener('click', ()=>{
+      const keys = Object.keys(answerKey);
+      if(!keys.length){
+        // Jika belum ada kunci, tampilkan prompt untuk memasukkan (guru) — tanpa mengganggu alur.
+        const proceed = confirm('Kunci jawaban belum diisi. Klik OK untuk membuka editor kunci (Anda akan diminta memasukkan JSON sederhana, contoh: {"q13":"B","q21":"C"}) .');
+        if(!proceed) return;
+        const json = prompt('Masukkan kunci jawaban (format JSON). Contoh: {"q13":"B","q21":"C"}', '{}');
+        try{
+          const obj = JSON.parse(json || '{}');
+          // validasi sederhana: k? q1..q25 only
+          const valid = Object.keys(obj).every(k => /^q(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25)$/.test(k) && /^[A-D]$/.test(obj[k]));
+          if(!valid && Object.keys(obj).length){
+            alert('Format atau nilai kunci tidak valid. Pastikan kunci bertanda q1..q25 dan jawaban A-D.');
+            return;
+          }
+          // Replace entries in answerKey (since answerKey is const, we copy values into it by property)
+          for(const k of Object.keys(answerKey)) delete answerKey[k];
+          for(const [k,v] of Object.entries(obj)) answerKey[k]=v;
+          if(Object.keys(answerKey).length){
+            alert('Kunci berhasil disimpan (sesi ini). Tekan Submit untuk melihat skor.');
+          } else {
+            alert('Tidak ada kunci disimpan.');
+          }
+        } catch(e){
+          alert('JSON tidak valid. Silakan coba lagi.');
+        }
+      } else {
+        // tampilkan kunci saat ini
+        alert('Kunci saat ini:\n' + JSON.stringify(answerKey, null, 2));
+      }
+    });
+
+    // small enhancement: highlight selected options
+    document.querySelectorAll('input[type=radio]').forEach(r=>{
+      r.addEventListener('change', (e)=>{
+        const name = e.target.name;
+        document.querySelectorAll('input[name="'+name+'"]').forEach(i=>{
+          if(i.checked) i.closest('label').style.outline = '2px solid rgba(6,182,212,0.12)';
+          else i.closest('label').style.outline = 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
 
