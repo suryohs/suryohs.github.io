@@ -139,8 +139,11 @@
     .then(r=>r.json())
     .then(j=>{
       if(!j.success) throw new Error(j.error||'gagal');
-      students = j.data || [];
-      if(!Array.isArray(students) || students.length===0) {
+      students = (j.data || []).map(s => ({
+        ...s,
+        token: String(s.token || '') // pastikan token selalu string
+      }));
+      if(students.length===0) {
         el('status').textContent = 'Tidak ada peserta di server.';
         throw new Error('no peserta');
       }
@@ -349,5 +352,4 @@
       <p><strong>JENIS_TES:</strong> ${escapeHtml(data.jenisTes)}</p>
       <p><strong>TOKEN:</strong> ${escapeHtml(data.token)}</p>
       <p><strong>SCORE:</strong> ${data.score}</p>
-      <p><strong>DURASI (detik):</strong> ${data.durasi}</p>
-      <p><
+      <p><strong
