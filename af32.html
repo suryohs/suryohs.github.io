@@ -3,385 +3,550 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Assesmen Formatif</title>
+  <title>Assesmen Formatif - AF32</title>
   <style>
-    :root{--bg:#0f172a;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;--text:#e6eef8}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,Arial;background:linear-gradient(180deg,#071021 0%, #07162a 100%);color:var(--text)}
-    .wrap{max-width:900px;margin:28px auto;padding:20px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:20px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-    h1{margin:0 0 14px;font-size:20px}
-    label{display:block;font-size:13px;color:var(--muted);margin-top:12px}
-    select,input,textarea,button{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);font-size:15px}
-    .row{display:flex;gap:12px}
-    .col{flex:1}
-    .hidden{display:none}
-    .center{display:flex;gap:8px;align-items:center}
-    .small{font-size:13px;color:var(--muted)}
-    .btn{background:var(--accent);color:#012;cursor:pointer;border:none;padding:10px 14px;border-radius:8px}
-    .danger{background:#ef4444}
-    .question{font-size:18px;margin:12px 0}
-    .timer{font-weight:700}
-    .status{margin-top:8px}
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --accent: #0f172a;
+      --muted: #6b7280;
+      --success: #16a34a;
+      --danger: #dc2626;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body { height:100%; margin:0; background:var(--bg); color:var(--accent); }
+    .container { max-width:920px; margin:28px auto; padding:20px; }
+    .card { background:var(--card); border-radius:12px; padding:20px; box-shadow: 0 6px 18px rgba(15,23,42,0.08); }
+    h1 { margin:0 0 12px 0; font-size:22px; }
+    label { display:block; font-size:13px; margin-bottom:6px; color:var(--muted); }
+    select,input,textarea,button { font-size:16px; padding:10px 12px; border-radius:8px; border:1px solid #d1d5db; background:#fff; color:#000; }
+    .row { display:flex; gap:12px; }
+    .col { flex:1; }
+    .hidden { display:none; }
+    .center { text-align:center; }
+    .small { font-size:13px; color:var(--muted); }
+    .btn { cursor:pointer; border:none; background:#111827; color:#fff; padding:10px 14px; border-radius:8px; }
+    .btn:disabled { opacity:0.6; cursor:not-allowed; }
+    .status { margin-top:8px; font-weight:600; }
+    .timer { font-size:20px; font-weight:700; }
+    .question-box { margin-top:16px; padding:14px; border-radius:10px; border:1px dashed #e5e7eb; background:#fbfbfd; }
+    .result-row { display:flex; gap:14px; flex-wrap:wrap; }
+    .result-item { flex:1 1 45%; background:#fff; padding:10px; border-radius:8px; border:1px solid #e6e9ef; }
+    pre.example { background:#0b1220; color:#fff; padding:12px; border-radius:8px; overflow:auto; }
+    .muted-block { color:var(--muted); }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card" id="page-login">
-      <h1>Assesmen Formatif — Login</h1>
-      <p class="small">Hubungkan ke server untuk memuat daftar peserta. Jika gagal, aplikasi tidak menyediakan demo.</p>
-      <div id="loading">Memuat peserta...</div>
-      <div id="login-form" class="hidden">
-        <label>Username</label>
+  <div class="container">
+
+    <!-- PAGE: LOGIN -->
+    <div id="page-login" class="card">
+      <h1>Assesmen Formatif — AF32 KALI / BAGI DESIMAL</h1>
+      <p class="small">Masuk untuk melanjutkan. (API digunakan untuk memuat daftar siswa dan validasi)</p>
+
+      <div id="login-form">
+        <label>Username (pilih)</label>
         <select id="usernameSelect"></select>
 
-        <label>Password</label>
-        <input id="passwordInput" type="password" autocomplete="new-password" />
+        <label style="margin-top:12px">Password (isi)</label>
+        <input id="passwordInput" type="text" placeholder="password (diambil dari kolom ke-2)" />
 
-        <label>Jenis Tes</label>
+        <label style="margin-top:12px">Jenis Tes</label>
         <select id="jenisTesSelect">
           <option>AF32 KALI BAGI DESIMAL</option>
         </select>
 
-        <div style="margin-top:12px" class="row">
-          <button id="loginBtn" class="btn col">Masuk</button>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button id="btnLogin" class="btn">Login</button>
+          <button id="btnReload" class="btn" style="background:#374151">Muat Ulang Data</button>
         </div>
-        <div id="loginError" class="small" style="color:#fca5a5;margin-top:8px"></div>
+
+        <div id="loginStatus" class="status muted-block"></div>
       </div>
     </div>
 
-    <div class="card hidden" id="page-confirm">
-      <h1>Konfirmasi Mulai</h1>
-      <p class="small">Periksa kembali data Anda, lalu masukkan token dan mulai tes.</p>
-      <div><strong>Username:</strong> <span id="confirmUsername"></span></div>
-      <div><strong>Password:</strong> <span id="confirmPassword"></span></div>
-      <div><strong>Jenis Tes:</strong> <span id="confirmJenis"></span></div>
+    <!-- PAGE: KONFIRMASI -->
+    <div id="page-konfirmasi" class="card hidden">
+      <h1>Konfirmasi Mulai Tes</h1>
+      <p class="small">Periksa kembali sebelum memulai.</p>
+      <div>
+        <label>Username</label>
+        <div id="k_username" class="muted-block"></div>
 
-      <label style="margin-top:12px">Token</label>
-      <input id="tokenInput" type="text" />
+        <label style="margin-top:8px">Password</label>
+        <div id="k_password" class="muted-block"></div>
 
-      <div style="margin-top:12px" class="row">
-        <button id="backBtn" class="col">Kembali</button>
-        <button id="startBtn" class="btn col">Mulai Tes</button>
-      </div>
+        <label style="margin-top:8px">Jenis Tes</label>
+        <div id="k_jenis" class="muted-block"></div>
 
-      <div id="tokenError" class="small" style="color:#fca5a5;margin-top:8px"></div>
-    </div>
+        <label style="margin-top:8px">Token</label>
+        <input id="tokenInput" type="text" placeholder="Masukkan token" />
 
-    <div class="card hidden" id="page-test">
-      <h1>Asesmen — Soal <span id="qIndex">1</span>/5</h1>
-      <div class="small">Waktu tiap soal: <span class="timer" id="qTimer">90</span> detik</div>
-      <div id="preCount" class="question" style="font-size:48px;text-align:center;margin:18px 0"></div>
-      <div id="questionArea" class="hidden">
-        <div class="question" id="questionText"></div>
-        <label>Jawaban (essay)</label>
-        <textarea id="answerInput" rows="3"></textarea>
-        <div style="margin-top:10px" class="row">
-          <button id="skipBtn" class="col">Lewati</button>
-          <button id="submitAnswerBtn" class="btn col">Kirim Jawaban</button>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button id="btnStart" class="btn">Mulai Tes</button>
+          <button id="btnBackLogin" class="btn" style="background:#6b7280">Kembali</button>
         </div>
-        <div id="feedback" class="status small"></div>
+
+        <div id="konfStatus" class="status muted-block"></div>
       </div>
     </div>
 
-    <div class="card hidden" id="page-result">
-      <h1>Hasil</h1>
-      <div id="resultData"></div>
-      <div style="margin-top:12px" class="small">Data akan terkirim otomatis ke spreadsheet.</div>
-      <div style="margin-top:12px" class="row">
-        <button id="restartBtn" class="col">Mulai Ulang</button>
+    <!-- PAGE: ASESMEN (FULLSCREEN) -->
+    <div id="page-asesmen" class="card hidden">
+      <h1 id="asesmenTitle">Asesmen — AF32</h1>
+      <div class="small">Soal <span id="qIndex">0</span>/5 — Waktu soal: <span id="qTime">90</span>s</div>
+      <div style="margin-top:10px;" class="timer" id="countdownMain">--</div>
+
+      <div id="preCountdown" class="center" style="font-size:48px; margin-top:12px;"></div>
+
+      <div id="questionArea" class="question-box hidden">
+        <div id="questionText" style="font-size:18px; font-weight:700;"></div>
+        <div style="margin-top:12px">
+          <label>Jawaban (essay)</label>
+          <textarea id="answerInput" rows="3" style="width:100%;"></textarea>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <button id="btnSubmitAnswer" class="btn">Kirim Jawaban</button>
+        </div>
+        <div id="qFeedback" class="status"></div>
+      </div>
+
+      <div id="endNotice" class="hidden center" style="margin-top:12px;">
+        <div class="muted-block">Tes selesai atau terhenti. Mengarahkan ke halaman hasil...</div>
       </div>
     </div>
+
+    <!-- PAGE: RESULT -->
+    <div id="page-result" class="card hidden">
+      <h1>Hasil Tes</h1>
+      <p class="small">Data akan dikirim otomatis ke spreadsheet.</p>
+
+      <div class="result-row" style="margin-top:12px;">
+        <div class="result-item"><strong>NAMA</strong><div id="r_nama" class="muted-block"></div></div>
+        <div class="result-item"><strong>KELAS</strong><div id="r_kelas" class="muted-block"></div></div>
+        <div class="result-item"><strong>JENIS_TES</strong><div id="r_jenis" class="muted-block"></div></div>
+        <div class="result-item"><strong>TOKEN</strong><div id="r_token" class="muted-block"></div></div>
+        <div class="result-item"><strong>SCORE</strong><div id="r_score" class="muted-block"></div></div>
+        <div class="result-item"><strong>DURASI (detik)</strong><div id="r_durasi" class="muted-block"></div></div>
+        <div class="result-item"><strong>WAKTU_SIMPAN</strong><div id="r_waktu" class="muted-block"></div></div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <button id="btnToLogin" class="btn">Kembali ke Login</button>
+      </div>
+
+      <div id="sendStatus" class="small muted-block" style="margin-top:10px;"></div>
+    </div>
+
   </div>
 
-  <script>
-    // ------- Konfigurasi -------
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwLkVTPIG0bOxSCHQHiT7kNWge6mIheTqH_qb6ghAqiD_8RUl96RVKmZ5BQJptfBcAFhg/exec';
-    // ---------------------------
+<script>
+/* ================= Configuration ================= */
+const API_BASE = 'https://script.google.com/macros/s/AKfycbwLkVTPIG0bOxSCHQHiT7kNWge6mIheTqH_qb6ghAqiD_8RUl96RVKmZ5BQJptfBcAFhg/exec';
+const TOTAL_QUESTIONS = 5;
+const TIME_PER_QUESTION = 90; // detik
+/* ================================================= */
 
-    let students = [];
-    let currentStudent = null;
-    let selectedJenis = null;
-    let enteredToken = '';
-    let questions = [];
-    let currentIndex = 0;
-    let score = 0;
-    let page3EnterTime = null;
-    let qTimerInterval = null;
-    let qTimeLeft = 90;
+/* ---------- State ---------- */
+let students = []; // [{nama, kelas, jenisTes, token}]
+let state = {
+  username: null,
+  password: null,
+  jenisTes: 'AF32 KALI BAGI DESIMAL',
+  token: null,
+  currentIndex: 0,
+  score: 0,
+  questions: [],
+  answers: [],
+  startTime: null,
+  endTime: null,
+  questionStartTs: null,
+  timers: { qTimer: null, preTimer: null }
+};
+/* --------------------------- */
 
-    // Utility
-    const $ = id => document.getElementById(id);
-    function show(id){$(id).classList.remove('hidden')}
-    function hide(id){$(id).classList.add('hidden')}
-
-    // Fetch peserta dari server
-    async function loadStudents(){
-      try{
-        const res = await fetch(API_URL);
-        const json = await res.json();
-        if(json.success && Array.isArray(json.data)){
-          students = json.data.slice();
-          // Sort by nama alphabet
-          students.sort((a,b)=>{return String(a.nama).localeCompare(String(b.nama),'id')});
-          populateUsernameSelect();
-          hide('loading');
-          show('login-form');
-        } else {
-          throw new Error('Data peserta kosong');
-        }
-      }catch(err){
-        $('loading').textContent = 'Gagal memuat peserta — koneksi/API bermasalah. Aplikasi tidak menyediakan mode demo.';
-        console.error('loadStudents:',err);
-      }
+/* Utility: fetch student data */
+async function loadStudentData() {
+  try {
+    const res = await fetch(API_BASE + '?action=get_students', { cache: 'no-cache' });
+    // API returns JSON; try to parse
+    const json = await res.json();
+    if (json && json.success && Array.isArray(json.data)) {
+      students = json.data.slice();
+      // sort alfabet berdasarkan nama
+      students.sort((a,b) => String(a.nama||'').localeCompare(String(b.nama||''), 'id'));
+      populateUsernameDropdown();
+      document.getElementById('loginStatus').textContent = 'Data peserta dimuat.';
+    } else {
+      throw new Error('Response tidak sesuai dari server.');
     }
+  } catch (err) {
+    // sesuai permintaan: "tidak dibuat menu demo jika koneksi gagal."
+    document.getElementById('loginStatus').textContent = 'Gagal memuat data peserta. Periksa koneksi atau endpoint.';
+    document.getElementById('usernameSelect').innerHTML = '<option value="">(tidak ada data)</option>';
+    students = [];
+    console.error(err);
+  }
+}
 
-    function populateUsernameSelect(){
-      const sel = $('usernameSelect');
-      sel.innerHTML='';
-      students.forEach((s,idx)=>{
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = s.nama + ' — ' + (s.kelas||'');
-        sel.appendChild(opt);
-      });
+function populateUsernameDropdown() {
+  const sel = document.getElementById('usernameSelect');
+  sel.innerHTML = '';
+  const defaultOpt = document.createElement('option');
+  defaultOpt.value = '';
+  defaultOpt.textContent = '-- pilih username --';
+  sel.appendChild(defaultOpt);
+  students.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.nama || '';
+    opt.textContent = s.nama || '';
+    sel.appendChild(opt);
+  });
+}
+
+/* Login flow */
+document.getElementById('btnReload').addEventListener('click', loadStudentData);
+
+document.getElementById('btnLogin').addEventListener('click', () => {
+  const username = document.getElementById('usernameSelect').value;
+  const password = document.getElementById('passwordInput').value.trim();
+  const jenisTes = document.getElementById('jenisTesSelect').value;
+
+  if (!username) {
+    document.getElementById('loginStatus').textContent = 'Pilih username.';
+    return;
+  }
+  if (!password) {
+    document.getElementById('loginStatus').textContent = 'Isi password.';
+    return;
+  }
+  // cari di students: username => nama, password => kelas
+  const match = students.find(s => String(s.nama) === String(username) && String(s.kelas) === String(password) && String(s.jenisTes) === String(jenisTes));
+  if (!match) {
+    document.getElementById('loginStatus').textContent = 'Login gagal: username/password/jenisTes tidak cocok.';
+    return;
+  }
+  // sukses -> pergi ke konfirmasi
+  state.username = match.nama;
+  state.password = match.kelas;
+  state.jenisTes = match.jenisTes;
+  showPage('konfirmasi');
+  document.getElementById('k_username').textContent = state.username;
+  document.getElementById('k_password').textContent = state.password;
+  document.getElementById('k_jenis').textContent = state.jenisTes;
+  document.getElementById('konfStatus').textContent = '';
+});
+
+document.getElementById('btnBackLogin').addEventListener('click', () => showPage('login'));
+
+/* Konfirmasi token and start */
+document.getElementById('btnStart').addEventListener('click', () => {
+  const tokenVal = document.getElementById('tokenInput').value.trim();
+  if (!tokenVal) {
+    document.getElementById('konfStatus').textContent = 'Masukkan token.';
+    return;
+  }
+  // pada data siswa token ada di kolom token -> harus cocok dengan jenisTes milik siswa juga (sudah dicocokkan saat login)
+  const match = students.find(s => s.nama === state.username && s.kelas === state.password && s.jenisTes === state.jenisTes && String(s.token) === tokenVal);
+  if (!match) {
+    document.getElementById('konfStatus').textContent = 'Token tidak cocok dengan data peserta.';
+    return;
+  }
+  state.token = tokenVal;
+  // persiapkan soal
+  state.questions = generateQuestions(TOTAL_QUESTIONS);
+  state.currentIndex = 0;
+  state.score = 0;
+  state.answers = [];
+  state.startTime = null;
+  state.endTime = null;
+  showPage('asesmen');
+  // mulai full screen dan mulai soal pertama
+  startFullScreenAndStartTest();
+});
+
+/* Hasil -> kembali ke login */
+document.getElementById('btnToLogin').addEventListener('click', () => {
+  showPage('login');
+  // reset minimal
+  document.getElementById('passwordInput').value = '';
+  document.getElementById('tokenInput').value = '';
+});
+
+/* Page switch helper */
+function showPage(name) {
+  ['login','konfirmasi','asesmen','result'].forEach(p => {
+    const el = document.getElementById('page-' + p);
+    if (!el) return;
+    if (p === name) el.classList.remove('hidden'); else el.classList.add('hidden');
+  });
+}
+
+/* ---------- Generate Questions ---------- */
+/* Generate questions similar to examples:
+   examples are pairs like: 0.3 4  (implies multiply/divide)
+   We'll generate decimal (2 dp) and integer, with sign variety, and choose × or ÷.
+*/
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function formatDecimal(num){
+  // remove trailing zeros but keep at least one decimal if needed
+  let s = Number(Math.round(num * 1000000)/1000000).toString();
+  return s;
+}
+
+function generateQuestions(n){
+  const qs = [];
+  for(let i=0;i<n;i++){
+    const decSign = Math.random() < 0.5 ? -1 : 1;
+    // decimal with 2 d.p. but allow values like 0.02 etc.
+    const absDec = (Math.floor(Math.random()*95)+1) / 100; // 0.01 .. 0.95
+    const decimal = +(absDec * decSign).toFixed(2);
+    // integer operand range
+    const intSign = Math.random() < 0.5 ? -1 : 1;
+    const integer = (Math.floor(Math.random()*12)+1) * intSign; // -12 .. -1 or 1..12
+    const op = Math.random() < 0.6 ? '×' : '÷'; // lebih sering kali
+    let text = `${decimal} ${integer}`;
+    // compute answer
+    let answer;
+    if (op === '×') {
+      answer = decimal * integer;
+    } else {
+      // be careful for dividing by zero (integer never zero). compute decimal / integer.
+      answer = decimal / integer;
     }
+    // normalize answer to reasonable decimal places (max 6)
+    answer = Number(Math.round(answer * 1000000) / 1000000);
+    qs.push({ decimal, integer, op, text, answer });
+  }
+  return qs;
+}
 
-    // LOGIN
-    $('loginBtn').addEventListener('click',()=>{
-      const idx = $('usernameSelect').value;
-      const pw = $('passwordInput').value.trim();
-      if(idx === '' || idx == null){$('loginError').textContent='Pilih username.';return}
-      const st = students[Number(idx)];
-      // Peraturan mapping: kolom 1 = nama (username), kolom2 = kelas (dipakai sebagai password)
-      if(st.kelas == undefined){$('loginError').textContent='Data peserta tidak lengkap.';return}
-      if(pw === st.kelas){
-        // login success
-        currentStudent = st;
-        selectedJenis = $('jenisTesSelect').value;
-        $('loginError').textContent='';
-        goToConfirm();
-      } else {
-        $('loginError').textContent='Password salah.';
-      }
-    });
+/* ---------- Fullscreen and test flow ---------- */
+async function startFullScreenAndStartTest(){
+  // request fullscreen on body
+  try {
+    await document.documentElement.requestFullscreen?.();
+  } catch (e) {
+    console.warn('Fullscreen request failed:', e);
+  }
+  // start test only if fullscreen acquired; if not fullscreen, still start but monitor exit rule
+  beginTest();
+}
 
-    function goToConfirm(){
-      hide('page-login');
-      show('page-confirm');
-      $('confirmUsername').textContent = currentStudent.nama;
-      $('confirmPassword').textContent = currentStudent.kelas;
-      $('confirmJenis').textContent = selectedJenis;
+document.addEventListener('fullscreenchange', () => {
+  const isFs = !!document.fullscreenElement;
+  // if left fullscreen while on asesmen page -> finish immediately
+  if (!isFs && document.getElementById('page-asesmen').classList.contains('') && !document.getElementById('page-asesmen').classList.contains('hidden')) {
+    // finish
+    finishTestDueToExitFullscreen();
+  }
+});
+
+/* Disable Tab key while in asesmen */
+document.addEventListener('keydown', (ev) => {
+  const activeAsesmen = !document.getElementById('page-asesmen').classList.contains('hidden');
+  if (activeAsesmen && (ev.key === 'Tab' || ev.keyCode === 9)) {
+    ev.preventDefault();
+    return false;
+  }
+});
+
+/* Begin test */
+function beginTest(){
+  state.startTime = Date.now();
+  state.currentIndex = 0;
+  showQuestionWithPrecount();
+}
+
+function showQuestionWithPrecount(){
+  clearAllTimers();
+  document.getElementById('questionArea').classList.add('hidden');
+  document.getElementById('qFeedback').textContent = '';
+  document.getElementById('endNotice').classList.add('hidden');
+
+  const pre = document.getElementById('preCountdown');
+  let t = 3;
+  pre.textContent = t;
+  pre.classList.remove('hidden');
+  document.getElementById('countdownMain').textContent = '';
+  state.timers.preTimer = setInterval(()=> {
+    t--;
+    if (t <= 0) {
+      clearInterval(state.timers.preTimer);
+      pre.textContent = '';
+      pre.classList.add('hidden');
+      // tampilkan pertanyaan
+      showQuestion(state.currentIndex);
+    } else {
+      pre.textContent = t;
     }
+  }, 1000);
+}
 
-    $('backBtn').addEventListener('click',()=>{
-      hide('page-confirm');show('page-login');
-    });
-
-    $('startBtn').addEventListener('click',()=>{
-      enteredToken = $('tokenInput').value.trim();
-      // Validate token and jenis against student record
-      if(!enteredToken){$('tokenError').textContent='Token wajib diisi.';return}
-      if(currentStudent.token == undefined){$('tokenError').textContent='Token tidak tersedia pada data peserta.';return}
-      if(enteredToken !== String(currentStudent.token) || selectedJenis !== (currentStudent.jenisTes||'') ){
-        $('tokenError').textContent='Token atau jenis tes tidak cocok.';return
-      }
-      $('tokenError').textContent='';
-      startTest();
-    });
-
-    // ------------ Test flow ------------
-    function startTest(){
-      hide('page-confirm');
-      show('page-test');
-      // Generate 5 soal: kali atau bagi desimal (AF32)
-      questions = generateQuestions(5);
-      currentIndex = 0;score=0;
-      page3EnterTime = new Date();
-
-      // force fullscreen
-      requestFullscreenSafe();
-
-      // prevent tab key
-      document.addEventListener('keydown', blockTab, true);
-
-      // fullscreen exit listener
-      document.addEventListener('fullscreenchange', onFullScreenChange);
-
-      runPreCountThenShowQuestion();
+function showQuestion(index) {
+  if (index >= state.questions.length) {
+    // selesai
+    finishTestNormally();
+    return;
+  }
+  const q = state.questions[index];
+  document.getElementById('qIndex').textContent = (index + 1);
+  document.getElementById('qTime').textContent = TIME_PER_QUESTION;
+  document.getElementById('questionText').textContent = `Soal ${index+1}: ${q.decimal} ${q.op} ${q.integer} = ?`;
+  document.getElementById('answerInput').value = '';
+  document.getElementById('qFeedback').textContent = '';
+  document.getElementById('questionArea').classList.remove('hidden');
+  // start question timer
+  let remaining = TIME_PER_QUESTION;
+  document.getElementById('countdownMain').textContent = remaining + ' s';
+  state.questionStartTs = Date.now();
+  state.timers.qTimer = setInterval(() => {
+    remaining--;
+    document.getElementById('countdownMain').textContent = remaining + ' s';
+    if (remaining <= 0) {
+      clearInterval(state.timers.qTimer);
+      // treat as wrong, show answer and wait 5s
+      handleAnswerSubmission('', false, q.answer);
     }
+  }, 1000);
+}
 
-    function requestFullscreenSafe(){
-      const el = document.documentElement;
-      if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-    }
-    function onFullScreenChange(){
-      if(!document.fullscreenElement){
-        // user left fullscreen -> end test
-        finishTest('Anda keluar dari fullscreen. Tes selesai.');
-      }
-    }
-    function blockTab(e){ if(e.key==='Tab'){ e.preventDefault(); } }
+document.getElementById('btnSubmitAnswer').addEventListener('click', () => {
+  submitCurrentAnswer();
+});
 
-    function runPreCountThenShowQuestion(){
-      $('preCount').textContent='3';
-      show('preCount');hide('questionArea');
-      let n=3;
-      const t = setInterval(()=>{
-        n--; if(n>0){$('preCount').textContent = String(n);} else {clearInterval(t); $('preCount').textContent=''; hide('preCount'); show('questionArea'); showQuestion(); } },1000);
-    }
+function submitCurrentAnswer(){
+  const ansRaw = document.getElementById('answerInput').value.trim();
+  const q = state.questions[state.currentIndex];
+  // parse numeric answer tolerant
+  const parsed = parseFloat(ansRaw.replace(',', '.'));
+  const isCorrect = !isNaN(parsed) && nearlyEqual(parsed, q.answer);
+  // stop timer
+  clearInterval(state.timers.qTimer);
+  handleAnswerSubmission(ansRaw, isCorrect, q.answer);
+}
 
-    function showQuestion(){
-      if(currentIndex >= questions.length){ finishTest(); return }
-      const q = questions[currentIndex];
-      $('qIndex').textContent = String(currentIndex+1);
-      $('questionText').textContent = q.text;
-      $('answerInput').value='';
-      $('feedback').textContent='';
-      qTimeLeft = 90; $('qTimer').textContent = String(qTimeLeft);
-      // start interval
-      if(qTimerInterval) clearInterval(qTimerInterval);
-      qTimerInterval = setInterval(()=>{
-        qTimeLeft--; $('qTimer').textContent = String(qTimeLeft);
-        if(qTimeLeft<=0){ clearInterval(qTimerInterval); onTimeUp(); }
-      },1000);
-    }
+function nearlyEqual(a,b,eps=1e-6){
+  return Math.abs(Number(a)-Number(b)) <= eps;
+}
 
-    function onTimeUp(){
-      const q = questions[currentIndex];
-      $('feedback').textContent = 'Waktu habis. Jawaban benar: ' + q.answer;
-      // wait 5s then next
-      setTimeout(()=>{ currentIndex++; showQuestion(); },5000);
-    }
+function handleAnswerSubmission(ansRaw, isCorrect, correctAnswer){
+  const fb = document.getElementById('qFeedback');
+  if (isCorrect) {
+    state.score += 20; // benar * 20
+    fb.textContent = 'Benar ✅';
+    fb.style.color = 'green';
+    // simpan jawaban
+    state.answers.push({ q: state.questions[state.currentIndex], given: ansRaw, correct: true });
+    // tunggu 2 detik lalu next
+    setTimeout(()=> {
+      state.currentIndex++;
+      if (state.currentIndex < state.questions.length) showQuestionWithPrecount(); else finishTestNormally();
+    }, 2000);
+  } else {
+    fb.textContent = 'Salah ❌ | Jawaban benar: ' + formatDecimal(correctAnswer);
+    fb.style.color = 'red';
+    state.answers.push({ q: state.questions[state.currentIndex], given: ansRaw, correct: false, correctAnswer });
+    // tunggu 5 detik lalu next
+    setTimeout(()=> {
+      state.currentIndex++;
+      if (state.currentIndex < state.questions.length) showQuestionWithPrecount(); else finishTestNormally();
+    }, 5000);
+  }
+}
 
-    $('submitAnswerBtn').addEventListener('click',()=>{ checkAnswer(); });
-    $('skipBtn').addEventListener('click',()=>{ $('feedback').textContent='Soal dilewati. Jawaban benar: '+questions[currentIndex].answer; clearInterval(qTimerInterval); setTimeout(()=>{ currentIndex++; showQuestion(); },3000); });
+/* finish due to leaving fullscreen */
+function finishTestDueToExitFullscreen(){
+  clearAllTimers();
+  // mark end time and go to result
+  state.endTime = Date.now();
+  document.getElementById('endNotice').classList.remove('hidden');
+  // small delay then go to result
+  setTimeout(()=> finishTestNormally(), 800);
+}
 
-    function normalizeNumberString(s){
-      return String(s).replace(/\s+/g,'').replace(',','.');
-    }
+/* normal finish */
+function finishTestNormally(){
+  clearAllTimers();
+  state.endTime = Date.now();
+  // exit fullscreen if still in
+  if (document.fullscreenElement) {
+    document.exitFullscreen?.();
+  }
+  // show result page
+  showResultPage();
+}
 
-    function checkAnswer(){
-      clearInterval(qTimerInterval);
-      const q = questions[currentIndex];
-      const userRaw = normalizeNumberString($('answerInput').value.trim());
-      if(userRaw===''){ $('feedback').textContent='Jawaban kosong.'; qTimerInterval = setInterval(()=>{ qTimeLeft--; $('qTimer').textContent = String(qTimeLeft); if(qTimeLeft<=0){ clearInterval(qTimerInterval); onTimeUp(); } },1000); return }
-      // compare numeric values allowing small floating rounding
-      const userVal = Number(userRaw);
-      const correctVal = Number(q.answer);
-      const equal = Math.abs(userVal - correctVal) <= 1e-6;
-      if(equal){
-        score += 20; $('feedback').textContent = 'Benar! +20.';
-        setTimeout(()=>{ currentIndex++; showQuestion(); },2000);
-      } else {
-        $('feedback').textContent = 'Salah. Jawaban benar: ' + q.answer;
-        setTimeout(()=>{ currentIndex++; showQuestion(); },5000);
-      }
-    }
+/* Clear timers */
+function clearAllTimers(){
+  if (state.timers.qTimer) { clearInterval(state.timers.qTimer); state.timers.qTimer = null; }
+  if (state.timers.preTimer) { clearInterval(state.timers.preTimer); state.timers.preTimer = null; }
+}
 
-    function finishTest(reason){
-      // cleanup
-      if(qTimerInterval) clearInterval(qTimerInterval);
-      document.removeEventListener('keydown', blockTab, true);
-      document.removeEventListener('fullscreenchange', onFullScreenChange);
-      // If fullscreen, try to exit to restore tabs
-      if(document.fullscreenElement){ try{ document.exitFullscreen(); }catch(e){} }
+/* ---------- Result page and send data ---------- */
+function showResultPage(){
+  showPage('result');
+  // populate fields
+  document.getElementById('r_nama').textContent = state.username || '';
+  document.getElementById('r_kelas').textContent = state.password || '';
+  document.getElementById('r_jenis').textContent = state.jenisTes || '';
+  document.getElementById('r_token').textContent = state.token || '';
+  document.getElementById('r_score').textContent = String(state.score || 0);
+  const dur = state.startTime && state.endTime ? Math.floor((state.endTime - state.startTime)/1000) : 0;
+  document.getElementById('r_durasi').textContent = String(dur);
+  const waktuSimpan = new Date(state.endTime || Date.now()).toISOString().replace('T', ' ').replace('Z','');
+  document.getElementById('r_waktu').textContent = waktuSimpan;
 
-      hide('page-test');
-      show('page-result');
+  // send data automatically to spreadsheet via fetch with mode no-cors and JSON body
+  const payload = {
+    nama: state.username || '',
+    kelas: state.password || '',
+    jenisTes: state.jenisTes || '',
+    token: state.token || '',
+    score: state.score || 0,
+    durasi: dur,
+    waktuSimpan: waktuSimpan
+  };
 
-      const page4EnterTime = new Date();
-      const durMs = page4EnterTime - page3EnterTime;
-      const durSec = Math.max(0, Math.round(durMs/1000));
-      const durStr = formatDuration(durSec);
-      const waktuSimpan = page4EnterTime.toISOString();
+  // Show status
+  const sendStatusEl = document.getElementById('sendStatus');
+  sendStatusEl.textContent = 'Mengirim data ke spreadsheet...';
 
-      const payload = {
-        nama: currentStudent.nama || '',
-        kelas: currentStudent.kelas || '',
-        jenisTes: selectedJenis || '',
-        token: enteredToken || '',
-        score: score,
-        durasi: durStr,
-        waktuSimpan: waktuSimpan
-      };
+  // Perform fetch with mode: 'no-cors' as requested.
+  fetch(API_BASE, {
+    method: 'POST',
+    mode: 'no-cors', // sesuai permintaan
+    headers: {
+      // note: headers will be ignored in no-cors mode by browser, kept for intent only
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  }).then(()=> {
+    // with no-cors we cannot read response; assume success
+    sendStatusEl.textContent = 'Data telah dikirim (fetch mode: no-cors).';
+  }).catch(err => {
+    sendStatusEl.textContent = 'Pengiriman data gagal: ' + (err && err.message ? err.message : String(err));
+  });
+}
 
-      // tampilkan result
-      const rd = $('resultData');
-      rd.innerHTML = `
-        <div><strong>Nama:</strong> ${escapeHtml(payload.nama)}</div>
-        <div><strong>Kelas:</strong> ${escapeHtml(payload.kelas)}</div>
-        <div><strong>Jenis Tes:</strong> ${escapeHtml(payload.jenisTes)}</div>
-        <div><strong>Token:</strong> ${escapeHtml(payload.token)}</div>
-        <div><strong>Score:</strong> ${payload.score}</div>
-        <div><strong>Durasi:</strong> ${payload.durasi}</div>
-        <div><strong>Waktu Simpan:</strong> ${payload.waktuSimpan}</div>
-      `;
+/* ---------- Helpers & Initialization ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  // init
+  showPage('login');
+  loadStudentData();
+  // disable autocomplete spinners etc.
+  document.getElementById('answerInput').setAttribute('autocomplete','off');
+});
 
-      // Kirim data otomatis ke spreadsheet (fetch mode no-cors sesuai permintaan)
-      try{
-        fetch(API_URL, {
-          method: 'POST',
-          mode: 'no-cors', // sesuai permintaan
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-      }catch(e){ console.warn('Kirim data gagal',e); }
-
-    }
-
-    function formatDuration(s){
-      const m = Math.floor(s/60); const sec = s%60; return `${m}m ${sec}s`;
-    }
-
-    $('restartBtn').addEventListener('click',()=>{ location.reload(); });
-
-    // ------- Question generator (AF32: kali / bagi desimal) -------
-    function generateQuestions(n){
-      const qs=[];
-      for(let i=0;i<n;i++){
-        // randomly choose multiply or divide
-        const op = Math.random() < 0.6 ? 'x' : '/';
-        // Use decimals similar to examples: one operand decimal with 1-3 decimals, other integer or small decimal
-        const sign1 = Math.random()<0.3? -1:1;
-        const sign2 = Math.random()<0.3? -1:1;
-        const decimals = Math.random()<0.6? 2 : 3;
-        const a = (Math.round((Math.random()*1 + 0.01) * Math.pow(10,decimals)) / Math.pow(10,decimals)) * sign1; // between 0.01 and ~1.01
-        let b;
-        if(op === 'x'){
-          // multiply by small integer 1..12 or small decimal
-          if(Math.random()<0.7){ b = Math.floor(Math.random()*12)+1; } else { b = (Math.round((Math.random()*10+0.1)*100)/100)*sign2; }
-        } else {
-          // divide: divide decimal by integer or vice versa
-          if(Math.random()<0.6){ b = Math.floor(Math.random()*12)+1; } else { b = (Math.round((Math.random()*10+0.1)*100)/100)*sign2; }
-        }
-        // Random chance to swap positions (example shows decimal then integer)
-        let text, answer;
-        if(op==='x'){
-          text = `${a} × ${b}`;
-          answer = (a * b).toString();
-        } else {
-          text = `${a} ÷ ${b}`;
-          // avoid division by zero
-          if(b===0){ b = 1; }
-          answer = (a / b).toString();
-        }
-        // Round answer to at most 6 decimal places to reduce floating oddities
-        const ansNum = Number(answer);
-        const ansRounded = Math.round(ansNum * 1e6)/1e6;
-        qs.push({text, answer: String(ansRounded)});
-      }
-      return qs;
-    }
-
-    function escapeHtml(s){ return String(s).replace(/[&<>\"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-    // Start
-    loadStudents();
-
-    // Accessibility / safety: if user tries to close tab or refresh during test, warn
-    window.addEventListener('beforeunload', function(e){ if(!document.getElementById('page-test').classList.contains('hidden')){ e.preventDefault(); e.returnValue='Tes sedang berjalan — jika ditutup tes akan selesai.'; } });
-
-  </script>
+/* Utility: formatDecimal used in feedback */
+function formatDecimal(v){
+  if (typeof v !== 'number') return String(v);
+  // remove trailing zeros but keep up to 6 decimal if needed
+  let s = v.toFixed(6);
+  s = s.replace(/\.?0+$/,'');
+  return s;
+}
+</script>
 </body>
 </html>
