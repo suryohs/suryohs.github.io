@@ -171,7 +171,7 @@
     if(!uname || !pass) { alert('Isi username dan password'); return; }
     const found = students.find(s=>s.nama===uname);
     if(!found) { alert('Username tidak ditemukan'); return; }
-    // password check against second column (kelas)
+    // password check against kolom kedua (kelas)
     if(String(found.kelas) !== pass) { alert('Password salah'); return; }
     // success
     currentStudent = found;
@@ -187,9 +187,8 @@
   el('btn-validate').addEventListener('click', ()=>{
     const tokenIn = el('token').value.trim();
     if(!tokenIn) { alert('Masukkan token'); return; }
-    // validate token: match student with same nama, jenisTes and token
-    const match = students.find(s=> s.nama===currentStudent.nama && (s.jenisTes||'')===selectedJenis && String(s.token)===tokenIn);
-    if(!match) {
+    // validate token sesuai kolom ke-4 dari getStudentData
+    if(String(currentStudent.token) !== tokenIn || (currentStudent.jenisTes||'') !== selectedJenis) {
       el('confirm-msg').innerHTML = '<span class="danger">Token tidak cocok untuk user/jenis tes.</span>';
       return;
     }
@@ -202,20 +201,15 @@
   function genQuestions(n){
     const qs = [];
     for(let i=0;i<n;i++){
-      // randomly choose operation multiply or divide (60% multiply)
       const op = Math.random()<0.6? 'x':'÷';
-      // select decimal like examples: one decimal with 1-2 decimal places between -0.5 and 0.5 or -0.42 to 0.42
-      const a = (Math.random()*0.9 - 0.45).toFixed(2); // -0.45..0.45
-      // b integer between -9 and 9 excluding -1,0,1 for interesting results
+      const a = (Math.random()*0.9 - 0.45).toFixed(2);
       let b = Math.floor(Math.random()*19)-9;
-      if(b>=-1 && b<=1) b = 4; // avoid trivial
+      if(b>=-1 && b<=1) b = 4;
       if(op==='x'){
         const text = `${a} ${op} ${b}`;
         const answer = (parseFloat(a) * b);
         qs.push({text,answer});
       } else {
-        // division: make dividend from decimal and integer divisor
-        // ensure result not too long
         const b2 = (Math.random()*18-9).toFixed(0);
         let divisor = parseInt(b2)||3;
         if(divisor===0) divisor=3;
@@ -229,13 +223,10 @@
   }
 
   function startTest(){
-    // show page test
     showPage('test');
-    // prepare questions
     questions = genQuestions(5);
     qIndex = 0; correctCount = 0;
     el('q-total').textContent = questions.length;
-    // start pre-countdown 3..1
     el('countdown-start').classList.remove('hidden');
     el('question-area').classList.add('hidden');
     let n = 3; el('countdown-number').textContent = n;
@@ -243,18 +234,12 @@
       n--; el('countdown-number').textContent = n;
       if(n<=0){ clearInterval(cd);
         el('countdown-start').classList.add('hidden');
-        // request fullscreen
         requestFullScreen().then(()=>{
-          // disable tab
           window.addEventListener('keydown', blockTab);
-          // start timer
           testStartTime = Date.now();
-          // show first question
           showQuestion(qIndex);
         }).catch(err=>{
           console.warn('Fullscreen gagal atau ditolak',err);
-          // still attempt to continue but per requirement, if not fullscreen maybe treat accordingly
-          // We'll still start but immediately check fullscreenchange to finish if user exits.
           testStartTime = Date.now();
           window.addEventListener('keydown', blockTab);
           showQuestion(qIndex);
@@ -271,7 +256,6 @@
     el('answer').value = '';
     el('feedback').textContent = '';
     el('question-area').classList.remove('hidden');
-    // reset per-question timer
     clearInterval(qTimer);
     qTimeLeft = 90;
     updateTimerDisplay();
@@ -288,17 +272,13 @@
   }
 
   function handleTimeout(){
-    // treat as wrong
     const correct = questions[qIndex].answer;
     el('feedback').innerHTML = `<span class="danger">Waktu habis. Jawaban benar: ${formatNumber(correct)}</span>`;
     setTimeout(()=> showQuestion(qIndex+1),5000);
   }
 
-  el('btn-submit').addEventListener('click', ()=>{
-    submitAnswer();
-  });
+  el('btn-submit').addEventListener('click', ()=>{ submitAnswer(); });
   el('btn-skip').addEventListener('click', ()=>{
-    // skip treated as wrong
     clearInterval(qTimer);
     const correct = questions[qIndex].answer;
     el('feedback').innerHTML = `<span class="danger">Dinyatakan salah. Jawaban benar: ${formatNumber(correct)}</span>`;
@@ -311,7 +291,7 @@
     if(raw===''){ el('feedback').textContent = 'Masukkan jawaban atau tekan Lewati.'; return; }
     const given = Number(raw.replace(',','.'));
     const correct = questions[qIndex].answer;
-    const ok = !isNaN(given) && Math.abs(given - correct) < 0.01; // tolerance
+    const ok = !isNaN(given) && Math.abs(given - correct) < 0.01;
     if(ok){
       correctCount++;
       el('feedback').innerHTML = `<span class="ok">Benar</span>`;
@@ -327,7 +307,6 @@
     return (Math.round(x*100)/100).toString();
   }
 
-  // fullscreen helpers
   function requestFullScreen(){
     return new Promise((resolve,reject)=>{
       const elDoc = document.documentElement;
@@ -338,29 +317,21 @@
   }
 
   document.addEventListener('fullscreenchange', ()=>{
-    if(!document.fullscreenElement){
-      // user exited fullscreen: end test immediately
-      finishTest();
-    }
+    if(!document.fullscreenElement){ finishTest(); }
   });
 
-  // prevent tab key
   function blockTab(e){ if(e.key==='Tab'){ e.preventDefault(); } }
 
   function finishTest(){
-    // remove listeners
     window.removeEventListener('keydown', blockTab);
     clearInterval(qTimer);
     testEndTime = Date.now();
-    // exit fullscreen if still in
     if(document.fullscreenElement){ if(document.exitFullscreen) document.exitFullscreen(); }
-    // prepare result
     const score = correctCount * 20;
     const durMs = Math.max(0, (testEndTime - testStartTime));
-    const dur = Math.round(durMs/1000); // seconds
+    const dur = Math.round(durMs/1000);
     const waktuSimpan = new Date().toISOString();
 
-    // populate result page
     const data = {
       nama: currentStudent.nama,
       kelas: currentStudent.kelas,
@@ -379,38 +350,4 @@
       <p><strong>TOKEN:</strong> ${escapeHtml(data.token)}</p>
       <p><strong>SCORE:</strong> ${data.score}</p>
       <p><strong>DURASI (detik):</strong> ${data.durasi}</p>
-      <p><strong>WAKTU_SIMPAN:</strong> ${data.waktuSimpan}</p>
-    `;
-
-    // send data to spreadsheet via fetch with mode no-cors and JSON
-    try{
-      fetch(API, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      el('send-msg').textContent = 'Data dikirim (mode no-cors).';
-    }catch(e){
-      console.warn('send failed',e);
-      el('send-msg').textContent = 'Gagal mengirim data otomatis.';
-    }
-
-    showPage('result');
-  }
-
-  el('btn-done').addEventListener('click', ()=>{
-    location.reload();
-  });
-
-  function showPage(name){
-    pageLogin.classList.toggle('hidden', name!=='login');
-    pageConfirm.classList.toggle('hidden', name!=='confirm');
-    pageTest.classList.toggle('hidden', name!=='test');
-    pageResult.classList.toggle('hidden', name!=='result');
-  }
-
-  function escapeHtml(s){ return String(s).replace(/[&<>\"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-  // initially show login
-  showPage('login');
-
-})();
-</script>
-</body>
-</html>
+      <p><
