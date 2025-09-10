@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aplikasi Bel - Real-time (Firebase)</title>
+  <style>
+    :root{--bg:#f3f4f6;--card:#ffffff;--accent:#0b5fff;--muted:#6b7280}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:var(--bg);display:flex;align-items:center;justify-content:center;height:100vh}
+    .card{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.08);width:420px}
+    h1{margin:0 0 12px;font-size:20px}
+    label{display:block;margin-top:8px;color:var(--muted);font-size:13px}
+    select,input{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid #e6e9ef;font-size:15px}
+    button{margin-top:14px;padding:12px 16px;border-radius:10px;border:0;background:var(--accent);color:white;font-weight:600;cursor:pointer;width:100%;font-size:16px}
+    button[disabled]{opacity:0.6;cursor:not-allowed}
+    .status{margin-top:10px;font-size:13px;color:var(--muted)}
+    .small{font-size:12px;color:#9ca3af;margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Aplikasi Bel - Real-time</h1>
+    <div>
+      <label>Nama</label>
+      <input id="name" placeholder="Masukkan nama..." />
+      <label>Pilih Kelompok</label>
+      <select id="group">
+        <option value="">-- Pilih Kelompok --</option>
+        <option value="1">Kelompok 1</option>
+        <option value="2">Kelompok 2</option>
+        <option value="3">Kelompok 3</option>
+        <option value="4">Kelompok 4</option>
+        <option value="5">Kelompok 5</option>
+        <option value="6">Kelompok 6</option>
+        <option value="7">Kelompok 7</option>
+        <option value="8">Kelompok 8</option>
+      </select>
+      <button id="loginBtn">Login & Join</button>
+
+      <div id="panel" style="display:none">
+        <label>Status Koneksi</label>
+        <div class="status" id="connStatus">--</div>
+        <button id="bellBtn">BUNYIKAN BEL</button>
+        <div class="status" id="who">Bel belum aktif</div>
+        <div class="small">Aturan: Jika satu kelompok menekan bel lebih dulu, kelompok lain tidak bisa menekan sampai bunyi selesai.</div>
+      </div>
+
+      <div class="small">Instruksi singkat: Anda harus menaruh konfigurasi Firebase Realtime Database (lihat komentar di bagian script). Gunakan Realtime Database, bukan Firestore.</div>
+    </div>
+  </div>
+
+  <!-- Firebase (compat) CDN - menggunakan compat agar mudah transaction -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    /*
+      --- PENTING ---
+      1) Buat project Firebase dan aktifkan Realtime Database.
+      2) Ganti firebaseConfig di bawah dengan config project Anda.
+      3) Di rules Realtime Database sementara atur menjadi:
+         {
+           "rules": {
+             ".read": true,
+             ".write": true
+           }
+         }
+         (untuk tes lokal). Setelah deploy, kembalikan aturan keamanan.
+    */
+
+    // ----- GANTI INI DENGAN FIREBASE CONFIG ANDA -----
+    const firebaseConfig = {
+      apiKey: "REPLACE_ME",
+      authDomain: "REPLACE_ME",
+      databaseURL: "REPLACE_ME",
+      projectId: "REPLACE_ME",
+      storageBucket: "REPLACE_ME",
+      messagingSenderId: "REPLACE_ME",
+      appId: "REPLACE_ME"
+    };
+    // -------------------------------------------------
+
+    // init firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const loginBtn = document.getElementById('loginBtn');
+    const nameInput = document.getElementById('name');
+    const groupSelect = document.getElementById('group');
+    const panel = document.getElementById('panel');
+    const bellBtn = document.getElementById('bellBtn');
+    const connStatus = document.getElementById('connStatus');
+    const who = document.getElementById('who');
+
+    let my = {name: null, group: null, id: null};
+    let listeningRef = null;
+
+    // Map kelompok -> kata yang akan diulang
+    const words = {
+      1: 'satu', 2: 'dua', 3: 'tiga', 4: 'empat', 5: 'lima', 6: 'enam', 7: 'tujuh', 8: 'lapan'
+    };
+
+    // Simple helper: play word n times with spacing using SpeechSynthesis
+    function playSequence(word, times=3, gap=400){
+      return new Promise(resolve => {
+        let i = 0;
+        function speakNext(){
+          if(i>=times){ resolve(); return; }
+          const utter = new SpeechSynthesisUtterance(word);
+          // use local language
+          utter.lang = 'id-ID';
+          utter.onend = () => { i++; setTimeout(speakNext, gap); };
+          speechSynthesis.speak(utter);
+        }
+        speakNext();
+      });
+    }
+
+    // create a simple unique id for client
+    function uid(){ return 'u_' + Math.random().toString(36).slice(2,9); }
+
+    // Observe currentBell node for changes
+    function observeBell(){
+      const ref = db.ref('currentBell');
+      ref.on('value', snap => {
+        const val = snap.val();
+        if(!val || !val.playing){
+          who.textContent = 'Bel belum aktif';
+          bellBtn.disabled = false;
+        } else {
+          who.textContent = `Kelompok ${val.group} menekan — (${val.name})`;
+          // disable other groups while playing
+          if(val.group !== my.group) bellBtn.disabled = true;
+          else bellBtn.disabled = (val.id !== my.id); // if someone else press with same group
+        }
+      });
+    }
+
+    // Try to press: use transaction to ensure only first press wins
+    async function tryPress(){
+      const ref = db.ref('currentBell');
+      const myPayload = { playing: true, group: my.group, name: my.name, id: my.id, ts: Date.now() };
+      ref.transaction(current => {
+        if(current === null || !current.playing){
+          return myPayload;
+        }
+        // if already playing, abort
+        return; // no change
+      }, async (err, committed, snapshot) => {
+        if(err) { console.error(err); return; }
+        if(!committed){
+          // someone else already pressed
+          console.log('Sudah ada yang menekan.');
+          return;
+        }
+        // committed and snapshot contains our data
+        console.log('Pressed and locked:', snapshot.val());
+        // start playing locally
+        bellBtn.disabled = true;
+        const word = words[my.group] || 'bel';
+        try{
+          await playSequence(word, 3, 350);
+        } catch(e){ console.error(e); }
+        // clear lock
+        ref.set({ playing: false, last: { group: my.group, name: my.name, ts: Date.now() } });
+      });
+    }
+
+    // Login flow
+    loginBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      const group = groupSelect.value;
+      if(!name || !group){ alert('Isi nama dan pilih kelompok terlebih dahulu.'); return; }
+      my.name = name; my.group = group; my.id = uid();
+      // show panel
+      panel.style.display = 'block';
+      loginBtn.disabled = true; nameInput.disabled = true; groupSelect.disabled = true;
+      connStatus.textContent = 'Menyambung ke database...';
+
+      // show connected state (basic): read /.info/connected
+      const connectedRef = db.ref('.info/connected');
+      connectedRef.on('value', snap => {
+        if(snap.val() === true) connStatus.textContent = 'Terkoneksi (online)';
+        else connStatus.textContent = 'Terputus';
+      });
+
+      // Observe bell updates
+      observeBell();
+    });
+
+    // Bell button
+    bellBtn.addEventListener('click', async () => {
+      if(!my.group) { alert('Anda belum login.'); return; }
+      // attempt to press
+      tryPress();
+    });
+
+    // Clean up: when page unload, if this client had lock, clear it
+    window.addEventListener('beforeunload', () => {
+      // try to clear only if we hold lock
+      db.ref('currentBell').transaction(current => {
+        if(!current) return;
+        if(current.playing && current.id === my.id){
+          return { playing: false, last: { group: my.group, name: my.name, ts: Date.now() } };
+        }
+        return;
+      });
+    });
+
+    // Optional: show last pressed info (listen to updates to update "who") - already handled in observeBell
+
+  </script>
+</body>
+</html>
