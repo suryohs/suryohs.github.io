@@ -1,195 +1,312 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Tes Matematika</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aplikasi Tes — Contoh 3 Soal (Asli)</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+    :root{
+      --bg:#0f172a; --card:#0b1220; --accent:#06b6d4; --muted:#94a3b8;
+      --success:#10b981; --danger:#ef4444;
     }
-    .container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 800px;
-      padding: 20px;
+    *{box-sizing:border-box}
+    body{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0; background:linear-gradient(180deg,#0f172a 0%, #081024 100%);
+      color:#e6eef8; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      padding:24px;
     }
-    .question {
-      font-size: 1.2em;
-      margin-bottom: 15px;
+    .card{
+      width:100%; max-width:900px; background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius:14px; padding:22px; box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      border:1px solid rgba(255,255,255,0.03);
     }
-    .options {
-      display: grid;
-      gap: 10px;
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px}
+    header h1{font-size:1.1rem; margin:0; color:#e6eef8}
+    .meta{color:var(--muted); font-size:0.9rem}
+    .progress{height:10px; background:rgba(255,255,255,0.04); border-radius:999px; overflow:hidden; margin:14px 0}
+    .progress > i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),#3b82f6); width:0%}
+    .question-box{background:rgba(255,255,255,0.02); padding:18px; border-radius:10px; border:1px solid rgba(255,255,255,0.02)}
+    .qtext{font-size:1rem; line-height:1.5; color:#e6eef8; margin-bottom:12px; white-space:pre-wrap}
+    .options{display:grid; grid-template-columns:1fr; gap:10px}
+    .opt{
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border:1px solid rgba(255,255,255,0.03);
+      padding:12px; border-radius:8px; cursor:pointer; transition:transform .08s, box-shadow .12s;
+      color:#dbeafe;
     }
-    .option {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
+    .opt:hover{transform:translateY(-3px); box-shadow:0 8px 28px rgba(2,6,23,0.5)}
+    .opt.disabled{opacity:0.7; cursor:default}
+    .opt.correct{background:linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.06)); border-color:rgba(16,185,129,0.6); color:#bbf7d0}
+    .opt.wrong{background:linear-gradient(90deg, rgba(239,68,68,0.08), rgba(239,68,68,0.04)); border-color:rgba(239,68,68,0.6); color:#fecaca}
+    .controls{display:flex; gap:10px; margin-top:14px; align-items:center}
+    button.btn{
+      background:linear-gradient(180deg,var(--accent),#2563eb); color:#fff; border:none; padding:10px 14px; border-radius:9px; cursor:pointer;
+      font-weight:600;
     }
-    .option:hover {
-      background: #e0f2fe;
-      transform: scale(1.02);
+    button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted)}
+    .feedback{margin-top:12px; font-size:0.95rem}
+    .explanation{
+      margin-top:12px; background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; color:#cfe9ff;
+      border:1px dashed rgba(255,255,255,0.03); white-space:pre-wrap;
     }
-    .option.correct { background: #bbf7d0; border-color: #22c55e; }
-    .option.wrong { background: #fecaca; border-color: #ef4444; }
-    .progress {
-      height: 10px;
-      background: #e5e7eb;
-      border-radius: 5px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    .progress-bar {
-      height: 100%;
-      background: #3b82f6;
-      width: 0%;
-      transition: width 0.3s;
-    }
-    .btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1em;
-    }
-    .btn:hover { background: #2563eb; }
-    .result {
-      text-align: center;
+    .score{font-size:1.05rem; color:#e6eef8}
+    footer{margin-top:16px; text-align:right; color:var(--muted); font-size:0.85rem}
+    @media (min-width:720px){
+      .options{grid-template-columns:1fr 1fr}
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="quiz">
-      <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
-      <div id="question-container"></div>
-      <div class="options" id="options-container"></div>
-      <button class="btn" id="next-btn" style="display:none;">Soal Berikutnya</button>
+  <div class="card" role="application" aria-labelledby="title">
+    <header>
+      <div>
+        <h1 id="title">Aplikasi Tes Matematika — Contoh 3 Soal (Asli)</h1>
+        <div class="meta">Soal sesuai teks asli dari dokumen. Setelah menjawab akan tampil pembahasan asli.</div>
+      </div>
+      <div style="text-align:right">
+        <div class="meta">Soal acak • Opsi acak</div>
+        <div id="qcount" class="meta">Soal 0 / 3</div>
+      </div>
+    </header>
+
+    <div class="progress" aria-hidden><i id="progress-bar"></i></div>
+
+    <div class="question-box">
+      <div class="qtext" id="question-text">Memuat soal…</div>
+
+      <div class="options" id="options"></div>
+
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+
+      <div class="explanation" id="explanation" style="display:none"></div>
+
+      <div class="controls">
+        <button class="btn" id="nextBtn" style="display:none">Soal Berikutnya</button>
+        <button class="ghost" id="restart">Ulang Tes</button>
+        <div style="flex:1"></div>
+        <div id="scoreBox" class="score"></div>
+      </div>
     </div>
-    <div id="result" class="result" style="display:none;">
-      <h2>Hasil Tes</h2>
-      <p id="score"></p>
-      <button class="btn" onclick="startQuiz()">Ulang Tes</button>
-    </div>
+
+    <footer>Versi contoh — 3 soal. Jika tampil cocok, saya lanjutkan masukkan semua 20 soal.</footer>
   </div>
 
-  <script>
-    const questions = [
-      {q:"Suatu bilangan asli dua digit disebut bilangan Komri apabila habis dibagi 4, dan jika digitnya ditukar menjadi bilangan prima dua digit. Banyaknya bilangan Komri adalah…", a:"2"},
-      {q:"Ridho berlatih catur tiap 4 hari, Komri tiap 5 hari, Ikhsan tiap 6 hari. Mereka mulai 17 Juli 2025, pada Agustus 2026 mereka akan berlatih bersama pada tanggal…", a:"1"},
-      {q:"Faktor prima terbesar dari 2310 adalah…", a:"11"},
-      {q:"Bilangan bulat n terkecil sehingga n! habis dibagi 9! adalah…", a:"9"},
-      {q:"Banyaknya pecahan p/36 (p < 36) yang tidak dapat disederhanakan adalah…", a:"12"},
-      {q:"Jika n memenuhi 2n+3=13 dan n+5=10, maka nilai 2n+1 adalah…", a:"9"},
-      {q:"Jika operasi * didefinisikan sebagai a*b = a+b+ab, maka 2*3 adalah…", a:"11"},
-      {q:"Jika (a/b) + (b/a) = 3, maka nilai a²+b² adalah…", a:"5"},
-      {q:"Dalam lomba kuda, ketika kuda pertama finish, kuda kedua berjarak 1/5 lintasan dan kuda ketiga 1/4 lintasan. Saat kuda kedua finish, jarak kuda ketiga ke garis finish adalah…", a:"50"},
-      {q:"Nilai penjumlahan 1/(1·2)+1/(2·3)+…+1/(9·10) adalah…", a:"0.9"},
-      {q:"Banyak bilangan bulat x sehingga 7, 24, dan x membentuk sisi segitiga adalah…", a:"12"},
-      {q:"Segitiga dengan sisi a+b=7, b+c=8, c+a=9. Luas segitiga adalah…", a:"12"},
-      {q:"Jajaran genjang dengan sisi 6 dan 8. Nilai luas maksimal – minimal (kelipatan 12) adalah…", a:"24"},
-      {q:"Pada persegi panjang, jika luas segitiga tertentu 4, segitiga lain 2, maka luas yang ditanyakan adalah…", a:"6"},
-      {q:"Pada setengah lingkaran, sudut ACB = 25°. Maka ∠AOD adalah…", a:"130"},
-      {q:"Komri ingin ke kota R lewat Q: 7 jalan P→Q, 11 jalan Q→R, lalu pulang beda jalan. Banyak pilihan total adalah…", a:"462"},
-      {q:"5 anak dengan berat 40, 41, 42, 43, x. Jika median = mean, banyak nilai x yang mungkin adalah…", a:"3"},
-      {q:"Urutan kata KELASM (permutasi alfabetis) adalah…", a:"272"},
-      {q:"Banyak bilangan 3-digit dengan digit berbeda dan jumlah digit = 18 adalah…", a:"84"},
-      {q:"Jumlah pasangan (x,y) bilangan asli dengan 2x+3y=100 adalah…", a:"28"}
-    ];
+<script>
+/*
+  Soal & pembahasan diambil langsung dari file (teks asli).
+  Di sini dipakai 3 soal: nomor 1,2,3 dari dokumen.
+  Opsi dibuat otomatis: jawaban benar + 3 pengecoh.
+  Soal & opsi diacak pada setiap startQuiz().
+*/
 
-    let currentQuestionIndex, score;
+const rawQuestions = [
+  {
+    id: 1,
+    question:
+`Suatu bilangan asli dua digit disebut bilangan Komri apabila:
 
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+Bilangan tersebut habis dibagi oleh 4,
+
+Jika digitnya ditukar, maka hasilnya adalah bilangan prima dua digit.
+
+Sebagai contoh,  merupakan bilangan Komri karena  habis dibagi  dan  merupakan bilangan prima dua digit. Banyaknya bilangan Komri adalah…`,
+    // jawaban benar (mengacu pada pembahasan dokumen — benar: 2)
+    answer: "2",
+    pembahasan:
+`Dengan pengecekan terstruktur, mulai dari  didapat bahwa bilangan yang memenuhi dua syarat diatas hanyalah  dan .
+Jadi, banyaknya bilangan Komri ada sebanyak  bilangan.`
+  },
+
+  {
+    id: 2,
+    question:
+`Ridho, Komri, dan Ikhsan adalah orang yang memiliki hobi yang sama, yaitu catur. Karena kesibukan masing-masing, Ridho berlatih catur setiap 4 hari sekali, Komri berlatih catur setiap 5 hari sekali, sedangkan Ikhsan berlatih catur setiap 6 hari sekali. Jika pada tanggal 17 Juli 2025, Ridho dan Komri bersama-sama berlatih catur sedangkan Ikhsan baru akan berlatih pada tanggal 19 Juli 2025, maka pada Bulan Agustus tahun 2026, mereka akan berlatih bersama pada tanggal …`,
+    answer: "1",
+    pembahasan:
+`Perhatikan bahwa mereka bertiga akan berlatih bersama pada tanggal 6 Agustus 2025. Karena  maka mereka akan berlatih bersama-sama lagi setiap 60 hari.
+Perhatikan bahwa dalam satu tahun, terdapat 365 hari dan . Sehingga mereka bertiga akan berlatih bersama lagi 5 hari sebelum tanggal 6 Agustus 2026, yaitu 1 Agustus 2026.
+Jadi, pada Bulan Agustus tahun 2026, mereka akan berlatih bersama pada tanggal 1.`
+  },
+
+  {
+    id: 3,
+    question:
+`Faktor prima terbesar dari  adalah…`,
+    // from context, number is 2310 => faktor prima terbesar = 11
+    answer: "11",
+    pembahasan:
+`Perhatikan bahwa 
+Jadi, faktor prima terbesarnya adalah .`
+  }
+];
+
+// helper: shuffle array in-place
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// build options: correct plus 3 distractors.
+// For numeric answers we generate numeric distractors near the true value.
+// For safety, convert answer to string and try to parse int.
+function makeOptionsFor(q){
+  const correct = String(q.answer);
+  let opts = [correct];
+
+  // try numeric distractors when answer is integer
+  const n = parseInt(correct);
+  if(!isNaN(n)){
+    const deltas = [-6,-4,-3,-2,-1,1,2,3,4,5,6,7,8];
+    shuffle(deltas);
+    let i=0;
+    while(opts.length < 4 && i<deltas.length){
+      const candidate = String(n + deltas[i]);
+      if(candidate !== correct && !opts.includes(candidate) && (n + deltas[i])>0){
+        opts.push(candidate);
       }
-      return array;
+      i++;
     }
-
-    function startQuiz() {
-      currentQuestionIndex = 0;
-      score = 0;
-      shuffle(questions);
-      document.getElementById("result").style.display = "none";
-      document.getElementById("quiz").style.display = "block";
-      showQuestion();
+    // if still less than 4, add some other numbers
+    let extra = 10;
+    while(opts.length < 4){
+      const c = String(Math.max(1, Math.floor(Math.random()*100)));
+      if(!opts.includes(c)) opts.push(c);
+      extra--;
+      if(extra<0) break;
     }
-
-    function showQuestion() {
-      const q = questions[currentQuestionIndex];
-      document.getElementById("question-container").innerHTML = 
-        `<div class="question">Soal ${currentQuestionIndex+1}: ${q.q}</div>`;
-      
-      // generate opsi (1 benar + 3 random salah)
-      let options = [q.a];
-      while(options.length < 4){
-        let fake = (parseInt(q.a) + Math.floor(Math.random()*10)-5).toString();
-        if(fake !== q.a && !options.includes(fake) && !isNaN(parseInt(fake))) options.push(fake);
-      }
-      shuffle(options);
-
-      const optContainer = document.getElementById("options-container");
-      optContainer.innerHTML = "";
-      options.forEach(opt=>{
-        const btn = document.createElement("div");
-        btn.className = "option";
-        btn.innerText = opt;
-        btn.onclick = ()=>selectAnswer(btn, q.a);
-        optContainer.appendChild(btn);
-      });
-
-      document.getElementById("progress-bar").style.width = 
-        `${(currentQuestionIndex/questions.length)*100}%`;
-      document.getElementById("next-btn").style.display = "none";
+  } else {
+    // non-numeric: create dummy alts
+    while(opts.length < 4){
+      const c = correct + String(Math.floor(Math.random()*9)+1);
+      if(!opts.includes(c)) opts.push(c);
     }
+  }
 
-    function selectAnswer(btn, correct) {
-      const options = document.querySelectorAll(".option");
-      options.forEach(opt=>{
-        opt.onclick = null;
-        if(opt.innerText === correct) opt.classList.add("correct");
-        else if(opt === btn) opt.classList.add("wrong");
-      });
-      if(btn.innerText === correct) score++;
-      document.getElementById("next-btn").style.display = "block";
-    }
+  return shuffle(opts);
+}
 
-    document.getElementById("next-btn").onclick = ()=>{
-      currentQuestionIndex++;
-      if(currentQuestionIndex < questions.length){
-        showQuestion();
-      } else {
-        endQuiz();
-      }
+// application state
+let questions = []; // will hold shuffled questions with options
+let currentIndex = 0;
+let score = 0;
+const total = 3;
+
+const qText = document.getElementById('question-text');
+const optsDiv = document.getElementById('options');
+const progressBar = document.getElementById('progress-bar');
+const qcount = document.getElementById('qcount');
+const nextBtn = document.getElementById('nextBtn');
+const restartBtn = document.getElementById('restart');
+const feedback = document.getElementById('feedback');
+const explanation = document.getElementById('explanation');
+const scoreBox = document.getElementById('scoreBox');
+
+function startQuiz(){
+  // prepare questions
+  questions = rawQuestions.map(q=>{
+    return {
+      ...q,
+      options: makeOptionsFor(q)
     };
+  });
+  // randomize order of questions
+  shuffle(questions);
+  currentIndex = 0;
+  score = 0;
+  updateProgress();
+  renderQuestion();
+  explanation.style.display = 'none';
+  feedback.innerText = '';
+  scoreBox.innerText = `Skor: ${score}/${total}`;
+  nextBtn.style.display = 'none';
+}
+function updateProgress(){
+  qcount.innerText = `Soal ${currentIndex+1} / ${total}`;
+  const pct = Math.round((currentIndex/total)*100);
+  progressBar.style.width = pct + '%';
+}
+function renderQuestion(){
+  const q = questions[currentIndex];
+  qText.innerText = `Soal ${currentIndex+1}:\n\n` + q.question;
+  optsDiv.innerHTML = '';
+  explanation.style.display = 'none';
+  feedback.innerText = '';
 
-    function endQuiz(){
-      document.getElementById("quiz").style.display = "none";
-      document.getElementById("result").style.display = "block";
-      document.getElementById("score").innerText = 
-        `Skor Anda: ${score} dari ${questions.length}`;
-      document.getElementById("progress-bar").style.width = "100%";
-    }
+  // create option elements
+  q.options.forEach(optText=>{
+    const d = document.createElement('div');
+    d.className = 'opt';
+    d.tabIndex = 0;
+    d.setAttribute('role','button');
+    d.innerText = optText;
+    d.onclick = ()=>selectOption(d, optText, q);
+    d.onkeydown = (e)=>{ if(e.key === 'Enter' || e.key === ' ') selectOption(d, optText, q); };
+    optsDiv.appendChild(d);
+  });
 
-    // mulai otomatis
-    startQuiz();
-  </script>
+  updateProgress();
+  nextBtn.style.display = 'none';
+}
+function disableOptions(){
+  const all = document.querySelectorAll('.opt');
+  all.forEach(o=>{
+    o.classList.add('disabled');
+    o.onclick = null;
+  });
+}
+function selectOption(elem, chosen, q){
+  disableOptions();
+  const correct = String(q.answer);
+  if(chosen === correct){
+    elem.classList.add('correct');
+    feedback.innerHTML = `<strong style="color: #bbf7d0">Benar.</strong>`;
+    score++;
+  } else {
+    elem.classList.add('wrong');
+    // highlight correct option
+    const all = document.querySelectorAll('.opt');
+    all.forEach(o=>{
+      if(o.innerText === correct) o.classList.add('correct');
+    });
+    feedback.innerHTML = `<strong style="color: #fecaca">Salah.</strong> Jawaban benar: <strong>${correct}</strong>`;
+  }
+
+  // show pembahasan (teks asli dari dokumen)
+  explanation.style.display = 'block';
+  explanation.innerText = "Pembahasan (teks asli dari dokumen):\n\n" + q.pembahasan;
+
+  scoreBox.innerText = `Skor: ${score}/${total}`;
+  nextBtn.style.display = 'inline-block';
+}
+
+nextBtn.onclick = ()=>{
+  currentIndex++;
+  if(currentIndex >= total){
+    // selesai seluruh soal
+    qText.innerText = "Tes selesai.";
+    optsDiv.innerHTML = "";
+    feedback.innerHTML = `<strong>Hasil: ${score} / ${total}</strong>`;
+    explanation.style.display = 'block';
+    explanation.innerText = "Sudah selesai. Tekan 'Ulang Tes' untuk mencoba lagi.";
+    progressBar.style.width = '100%';
+    qcount.innerText = `Selesai • ${total}/${total}`;
+    nextBtn.style.display = 'none';
+  } else {
+    renderQuestion();
+  }
+};
+
+restartBtn.onclick = ()=>{
+  startQuiz();
+};
+
+// start immediately
+startQuiz();
+
+</script>
 </body>
 </html>
