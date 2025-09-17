@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Tes Matematika</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 800px;
+      padding: 20px;
+    }
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+    .option {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .option:hover {
+      background: #e0f2fe;
+      transform: scale(1.02);
+    }
+    .option.correct { background: #bbf7d0; border-color: #22c55e; }
+    .option.wrong { background: #fecaca; border-color: #ef4444; }
+    .progress {
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #3b82f6;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .btn:hover { background: #2563eb; }
+    .result {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="quiz">
+      <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+      <div id="question-container"></div>
+      <div class="options" id="options-container"></div>
+      <button class="btn" id="next-btn" style="display:none;">Soal Berikutnya</button>
+    </div>
+    <div id="result" class="result" style="display:none;">
+      <h2>Hasil Tes</h2>
+      <p id="score"></p>
+      <button class="btn" onclick="startQuiz()">Ulang Tes</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {q:"Suatu bilangan asli dua digit disebut bilangan Komri apabila habis dibagi 4, dan jika digitnya ditukar menjadi bilangan prima dua digit. Banyaknya bilangan Komri adalah…", a:"2"},
+      {q:"Ridho berlatih catur tiap 4 hari, Komri tiap 5 hari, Ikhsan tiap 6 hari. Mereka mulai 17 Juli 2025, pada Agustus 2026 mereka akan berlatih bersama pada tanggal…", a:"1"},
+      {q:"Faktor prima terbesar dari 2310 adalah…", a:"11"},
+      {q:"Bilangan bulat n terkecil sehingga n! habis dibagi 9! adalah…", a:"9"},
+      {q:"Banyaknya pecahan p/36 (p < 36) yang tidak dapat disederhanakan adalah…", a:"12"},
+      {q:"Jika n memenuhi 2n+3=13 dan n+5=10, maka nilai 2n+1 adalah…", a:"9"},
+      {q:"Jika operasi * didefinisikan sebagai a*b = a+b+ab, maka 2*3 adalah…", a:"11"},
+      {q:"Jika (a/b) + (b/a) = 3, maka nilai a²+b² adalah…", a:"5"},
+      {q:"Dalam lomba kuda, ketika kuda pertama finish, kuda kedua berjarak 1/5 lintasan dan kuda ketiga 1/4 lintasan. Saat kuda kedua finish, jarak kuda ketiga ke garis finish adalah…", a:"50"},
+      {q:"Nilai penjumlahan 1/(1·2)+1/(2·3)+…+1/(9·10) adalah…", a:"0.9"},
+      {q:"Banyak bilangan bulat x sehingga 7, 24, dan x membentuk sisi segitiga adalah…", a:"12"},
+      {q:"Segitiga dengan sisi a+b=7, b+c=8, c+a=9. Luas segitiga adalah…", a:"12"},
+      {q:"Jajaran genjang dengan sisi 6 dan 8. Nilai luas maksimal – minimal (kelipatan 12) adalah…", a:"24"},
+      {q:"Pada persegi panjang, jika luas segitiga tertentu 4, segitiga lain 2, maka luas yang ditanyakan adalah…", a:"6"},
+      {q:"Pada setengah lingkaran, sudut ACB = 25°. Maka ∠AOD adalah…", a:"130"},
+      {q:"Komri ingin ke kota R lewat Q: 7 jalan P→Q, 11 jalan Q→R, lalu pulang beda jalan. Banyak pilihan total adalah…", a:"462"},
+      {q:"5 anak dengan berat 40, 41, 42, 43, x. Jika median = mean, banyak nilai x yang mungkin adalah…", a:"3"},
+      {q:"Urutan kata KELASM (permutasi alfabetis) adalah…", a:"272"},
+      {q:"Banyak bilangan 3-digit dengan digit berbeda dan jumlah digit = 18 adalah…", a:"84"},
+      {q:"Jumlah pasangan (x,y) bilangan asli dengan 2x+3y=100 adalah…", a:"28"}
+    ];
+
+    let currentQuestionIndex, score;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startQuiz() {
+      currentQuestionIndex = 0;
+      score = 0;
+      shuffle(questions);
+      document.getElementById("result").style.display = "none";
+      document.getElementById("quiz").style.display = "block";
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[currentQuestionIndex];
+      document.getElementById("question-container").innerHTML = 
+        `<div class="question">Soal ${currentQuestionIndex+1}: ${q.q}</div>`;
+      
+      // generate opsi (1 benar + 3 random salah)
+      let options = [q.a];
+      while(options.length < 4){
+        let fake = (parseInt(q.a) + Math.floor(Math.random()*10)-5).toString();
+        if(fake !== q.a && !options.includes(fake) && !isNaN(parseInt(fake))) options.push(fake);
+      }
+      shuffle(options);
+
+      const optContainer = document.getElementById("options-container");
+      optContainer.innerHTML = "";
+      options.forEach(opt=>{
+        const btn = document.createElement("div");
+        btn.className = "option";
+        btn.innerText = opt;
+        btn.onclick = ()=>selectAnswer(btn, q.a);
+        optContainer.appendChild(btn);
+      });
+
+      document.getElementById("progress-bar").style.width = 
+        `${(currentQuestionIndex/questions.length)*100}%`;
+      document.getElementById("next-btn").style.display = "none";
+    }
+
+    function selectAnswer(btn, correct) {
+      const options = document.querySelectorAll(".option");
+      options.forEach(opt=>{
+        opt.onclick = null;
+        if(opt.innerText === correct) opt.classList.add("correct");
+        else if(opt === btn) opt.classList.add("wrong");
+      });
+      if(btn.innerText === correct) score++;
+      document.getElementById("next-btn").style.display = "block";
+    }
+
+    document.getElementById("next-btn").onclick = ()=>{
+      currentQuestionIndex++;
+      if(currentQuestionIndex < questions.length){
+        showQuestion();
+      } else {
+        endQuiz();
+      }
+    };
+
+    function endQuiz(){
+      document.getElementById("quiz").style.display = "none";
+      document.getElementById("result").style.display = "block";
+      document.getElementById("score").innerText = 
+        `Skor Anda: ${score} dari ${questions.length}`;
+      document.getElementById("progress-bar").style.width = "100%";
+    }
+
+    // mulai otomatis
+    startQuiz();
+  </script>
+</body>
+</html>
