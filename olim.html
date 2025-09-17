@@ -1,147 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Aplikasi Tes — Contoh 3 Soal (Asli)</title>
-  <style>
-    :root{
-      --bg:#0f172a; --card:#0b1220; --accent:#06b6d4; --muted:#94a3b8;
-      --success:#10b981; --danger:#ef4444;
-    }
-    *{box-sizing:border-box}
-    body{
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      margin:0; background:linear-gradient(180deg,#0f172a 0%, #081024 100%);
-      color:#e6eef8; min-height:100vh; display:flex; align-items:center; justify-content:center;
-      padding:24px;
-    }
-    .card{
-      width:100%; max-width:900px; background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-      border-radius:14px; padding:22px; box-shadow: 0 10px 30px rgba(2,6,23,0.6);
-      border:1px solid rgba(255,255,255,0.03);
-    }
-    header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px}
-    header h1{font-size:1.1rem; margin:0; color:#e6eef8}
-    .meta{color:var(--muted); font-size:0.9rem}
-    .progress{height:10px; background:rgba(255,255,255,0.04); border-radius:999px; overflow:hidden; margin:14px 0}
-    .progress > i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),#3b82f6); width:0%}
-    .question-box{background:rgba(255,255,255,0.02); padding:18px; border-radius:10px; border:1px solid rgba(255,255,255,0.02)}
-    .qtext{font-size:1rem; line-height:1.5; color:#e6eef8; margin-bottom:12px; white-space:pre-wrap}
-    .options{display:grid; grid-template-columns:1fr; gap:10px}
-    .opt{
-      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
-      border:1px solid rgba(255,255,255,0.03);
-      padding:12px; border-radius:8px; cursor:pointer; transition:transform .08s, box-shadow .12s;
-      color:#dbeafe;
-    }
-    .opt:hover{transform:translateY(-3px); box-shadow:0 8px 28px rgba(2,6,23,0.5)}
-    .opt.disabled{opacity:0.7; cursor:default}
-    .opt.correct{background:linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.06)); border-color:rgba(16,185,129,0.6); color:#bbf7d0}
-    .opt.wrong{background:linear-gradient(90deg, rgba(239,68,68,0.08), rgba(239,68,68,0.04)); border-color:rgba(239,68,68,0.6); color:#fecaca}
-    .controls{display:flex; gap:10px; margin-top:14px; align-items:center}
-    button.btn{
-      background:linear-gradient(180deg,var(--accent),#2563eb); color:#fff; border:none; padding:10px 14px; border-radius:9px; cursor:pointer;
-      font-weight:600;
-    }
-    button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted)}
-    .feedback{margin-top:12px; font-size:0.95rem}
-    .explanation{
-      margin-top:12px; background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; color:#cfe9ff;
-      border:1px dashed rgba(255,255,255,0.03); white-space:pre-wrap;
-    }
-    .score{font-size:1.05rem; color:#e6eef8}
-    footer{margin-top:16px; text-align:right; color:var(--muted); font-size:0.85rem}
-    @media (min-width:720px){
-      .options{grid-template-columns:1fr 1fr}
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aplikasi Tes — Load Langsung dari Google Sheets CSV</title>
+<style>
+  :root{
+    --bg:#0b1220; --card:#071029; --accent:#06b6d4; --muted:#94a3b8;
+    --ok:#10b981; --err:#ef4444; --glass: rgba(255,255,255,0.03);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; font-family:Inter,system-ui,Arial;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(180deg,#071029 0%, #021025 100%); color:#e6eef8;
+    padding:20px;
+  }
+  .wrap{width:100%; max-width:980px}
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px; padding:18px; border:1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 10px 30px rgba(1,6,23,0.6);
+  }
+  header{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px}
+  h1{font-size:1.05rem; margin:0}
+  .meta{color:var(--muted); font-size:0.9rem}
+  .progress{height:10px; background:rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; margin:12px 0}
+  .progress > i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),#3b82f6); width:0%; transition:width .35s}
+  .question-card{padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,0.02); background:var(--glass)}
+  .qtext{white-space:pre-wrap; margin-bottom:12px; line-height:1.45}
+  .options{display:grid; gap:8px}
+  .opt{
+    padding:10px 12px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.03);
+    cursor:pointer; transition:transform .08s, box-shadow .12s; color:#dbeafe;
+  }
+  .opt:hover{transform:translateY(-3px)}
+  .opt.disabled{opacity:0.7; cursor:default; transform:none}
+  .opt.correct{background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.35); color:#bbf7d0}
+  .opt.wrong{background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.35); color:#fecaca}
+  .controls{display:flex; gap:8px; align-items:center; margin-top:12px}
+  .btn{padding:10px 14px; border-radius:9px; border:none; cursor:pointer; font-weight:600}
+  .btn.primary{background:linear-gradient(180deg,var(--accent),#2563eb); color:white}
+  .btn.ghost{background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted)}
+  .feedback{margin-top:10px; font-size:0.95rem}
+  .explanation{margin-top:12px; padding:12px; border-radius:8px; background:rgba(255,255,255,0.02); color:#cfe9ff; border:1px dashed rgba(255,255,255,0.03); white-space:pre-wrap}
+  .small{font-size:0.9rem; color:var(--muted)}
+  footer{margin-top:14px; text-align:right; color:var(--muted); font-size:0.85rem}
+  @media(min-width:720px){ .options{grid-template-columns:1fr 1fr} }
+</style>
 </head>
 <body>
-  <div class="card" role="application" aria-labelledby="title">
+<div class="wrap">
+  <div class="card" id="app">
     <header>
       <div>
-        <h1 id="title">Aplikasi Tes Matematika — Contoh 3 Soal (Asli)</h1>
-        <div class="meta">Soal sesuai teks asli dari dokumen. Setelah menjawab akan tampil pembahasan asli.</div>
+        <h1>Aplikasi Tes — Ambil Soal dari Google Sheets (CSV)</h1>
+        <div class="meta">Soal dimuat langsung dari spreadsheet publik (CSV). Soal & opsi diacak.</div>
       </div>
       <div style="text-align:right">
-        <div class="meta">Soal acak • Opsi acak</div>
-        <div id="qcount" class="meta">Soal 0 / 3</div>
+        <div class="meta">URL CSV yang dipakai:</div>
+        <div id="csvUrl" class="small" style="max-width:360px; overflow-wrap:anywhere"></div>
+        <div id="qcount" class="meta">Memuat...</div>
       </div>
     </header>
 
-    <div class="progress" aria-hidden><i id="progress-bar"></i></div>
+    <div class="progress" aria-hidden><i id="pct"></i></div>
 
-    <div class="question-box">
-      <div class="qtext" id="question-text">Memuat soal…</div>
-
-      <div class="options" id="options"></div>
-
-      <div class="feedback" id="feedback" aria-live="polite"></div>
-
-      <div class="explanation" id="explanation" style="display:none"></div>
-
-      <div class="controls">
-        <button class="btn" id="nextBtn" style="display:none">Soal Berikutnya</button>
-        <button class="ghost" id="restart">Ulang Tes</button>
-        <div style="flex:1"></div>
-        <div id="scoreBox" class="score"></div>
+    <div id="content">
+      <div style="margin-bottom:8px">
+        <label class="small">Masukkan (atau ganti) URL CSV publik:</label>
+        <input id="urlInput" style="width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:#e6eef8" />
       </div>
+
+      <div id="loader" class="small">Klik "Muat Soal" untuk ambil soal dari spreadsheet publik.</div>
+
+      <div id="questionArea" style="display:none">
+        <div class="question-card">
+          <div class="qtext" id="qtext">...</div>
+          <div class="options" id="options"></div>
+          <div class="feedback" id="feedback"></div>
+          <div class="explanation" id="explanation" style="display:none"></div>
+          <div class="controls">
+            <button class="btn primary" id="nextBtn" style="display:none">Soal Berikutnya</button>
+            <button class="btn ghost" id="restartBtn">Ulang Tes</button>
+            <div style="flex:1"></div>
+            <div class="small" id="scoreBox"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <footer>Versi contoh — 3 soal. Jika tampil cocok, saya lanjutkan masukkan semua 20 soal.</footer>
+    <footer>Catatan: spreadsheet harus dipublish & dapat diakses publik. Jika browser menolak fetch karena CORS, coba buka lewat server lokal atau host file di web.</footer>
   </div>
+</div>
 
 <script>
-/*
-  Soal & pembahasan diambil langsung dari file (teks asli).
-  Di sini dipakai 3 soal: nomor 1,2,3 dari dokumen.
-  Opsi dibuat otomatis: jawaban benar + 3 pengecoh.
-  Soal & opsi diacak pada setiap startQuiz().
-*/
+/* CONFIG: default URL (user-provided CSV public link) */
+const defaultCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSSlOM7ASWaqcIjgmPcqrN5TjMWZVYACgeIYek-DxeQ3Jg5odZs_07XVWnvSxr0KWE3EbI-dJvvC8j8/pub?gid=0&single=true&output=csv";
 
-const rawQuestions = [
-  {
-    id: 1,
-    question:
-`Suatu bilangan asli dua digit disebut bilangan Komri apabila:
+const urlInput = document.getElementById('urlInput');
+const csvUrlDisplay = document.getElementById('csvUrl');
+const loader = document.getElementById('loader');
+const qcount = document.getElementById('qcount');
+const pct = document.getElementById('pct');
 
-Bilangan tersebut habis dibagi oleh 4,
+const questionArea = document.getElementById('questionArea');
+const qtext = document.getElementById('qtext');
+const optionsDiv = document.getElementById('options');
+const feedback = document.getElementById('feedback');
+const explanation = document.getElementById('explanation');
+const nextBtn = document.getElementById('nextBtn');
+const restartBtn = document.getElementById('restartBtn');
+const scoreBox = document.getElementById('scoreBox');
 
-Jika digitnya ditukar, maka hasilnya adalah bilangan prima dua digit.
+let questions = []; // array of {question, options:[], correctIndex, explanation}
+let order = [];
+let current = 0;
+let score = 0;
 
-Sebagai contoh,  merupakan bilangan Komri karena  habis dibagi  dan  merupakan bilangan prima dua digit. Banyaknya bilangan Komri adalah…`,
-    // jawaban benar (mengacu pada pembahasan dokumen — benar: 2)
-    answer: "2",
-    pembahasan:
-`Dengan pengecekan terstruktur, mulai dari  didapat bahwa bilangan yang memenuhi dua syarat diatas hanyalah  dan .
-Jadi, banyaknya bilangan Komri ada sebanyak  bilangan.`
-  },
-
-  {
-    id: 2,
-    question:
-`Ridho, Komri, dan Ikhsan adalah orang yang memiliki hobi yang sama, yaitu catur. Karena kesibukan masing-masing, Ridho berlatih catur setiap 4 hari sekali, Komri berlatih catur setiap 5 hari sekali, sedangkan Ikhsan berlatih catur setiap 6 hari sekali. Jika pada tanggal 17 Juli 2025, Ridho dan Komri bersama-sama berlatih catur sedangkan Ikhsan baru akan berlatih pada tanggal 19 Juli 2025, maka pada Bulan Agustus tahun 2026, mereka akan berlatih bersama pada tanggal …`,
-    answer: "1",
-    pembahasan:
-`Perhatikan bahwa mereka bertiga akan berlatih bersama pada tanggal 6 Agustus 2025. Karena  maka mereka akan berlatih bersama-sama lagi setiap 60 hari.
-Perhatikan bahwa dalam satu tahun, terdapat 365 hari dan . Sehingga mereka bertiga akan berlatih bersama lagi 5 hari sebelum tanggal 6 Agustus 2026, yaitu 1 Agustus 2026.
-Jadi, pada Bulan Agustus tahun 2026, mereka akan berlatih bersama pada tanggal 1.`
-  },
-
-  {
-    id: 3,
-    question:
-`Faktor prima terbesar dari  adalah…`,
-    // from context, number is 2310 => faktor prima terbesar = 11
-    answer: "11",
-    pembahasan:
-`Perhatikan bahwa 
-Jadi, faktor prima terbesarnya adalah .`
-  }
-];
-
-// helper: shuffle array in-place
+/* --- Utilities --- */
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
     const j = Math.floor(Math.random()*(i+1));
@@ -150,163 +128,441 @@ function shuffle(a){
   return a;
 }
 
-// build options: correct plus 3 distractors.
-// For numeric answers we generate numeric distractors near the true value.
-// For safety, convert answer to string and try to parse int.
-function makeOptionsFor(q){
-  const correct = String(q.answer);
-  let opts = [correct];
+/* Robust CSV parser (handles quoted cells) */
+function parseCSV(text){
+  const rows = [];
+  let cur = '';
+  let row = [];
+  let inQuotes = false;
 
-  // try numeric distractors when answer is integer
-  const n = parseInt(correct);
-  if(!isNaN(n)){
-    const deltas = [-6,-4,-3,-2,-1,1,2,3,4,5,6,7,8];
-    shuffle(deltas);
-    let i=0;
-    while(opts.length < 4 && i<deltas.length){
-      const candidate = String(n + deltas[i]);
-      if(candidate !== correct && !opts.includes(candidate) && (n + deltas[i])>0){
-        opts.push(candidate);
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    const nxt = text[i+1];
+
+    if(ch === '"' ){
+      if(inQuotes && nxt === '"'){ // escaped quote
+        cur += '"'; i++; // skip next
+      } else {
+        inQuotes = !inQuotes;
       }
-      i++;
+    } else if(ch === ',' && !inQuotes){
+      row.push(cur);
+      cur = '';
+    } else if((ch === '\n' || ch === '\r') && !inQuotes){
+      // handle CRLF (\r\n)
+      if(ch === '\r' && nxt === '\n'){ /* skip, will process at \n */ }
+      row.push(cur);
+      // skip empty trailing row sometimes
+      const allEmpty = row.every(c => c === '');
+      if(!(row.length === 1 && row[0] === '')) rows.push(row.slice());
+      row = [];
+      cur = '';
+      // if CRLF, next loop will see \n and skip adding empty row, ok
+    } else {
+      cur += ch;
     }
-    // if still less than 4, add some other numbers
-    let extra = 10;
-    while(opts.length < 4){
-      const c = String(Math.max(1, Math.floor(Math.random()*100)));
-      if(!opts.includes(c)) opts.push(c);
-      extra--;
-      if(extra<0) break;
-    }
+  }
+  // push remainder
+  if(inQuotes){
+    // malformed but push what we have
+    row.push(cur);
+    rows.push(row);
   } else {
-    // non-numeric: create dummy alts
-    while(opts.length < 4){
-      const c = correct + String(Math.floor(Math.random()*9)+1);
-      if(!opts.includes(c)) opts.push(c);
+    if(cur !== '' || row.length>0){
+      row.push(cur);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
+/* detect header names */
+function detectHeaders(headers){
+  // normalize headers to lowercase trimmed
+  const norm = headers.map(h=> (h||'').toString().trim().toLowerCase());
+  const map = {};
+  // question header candidates
+  const questionCandidates = ['question','soal','pertanyaan','tanya'];
+  const optionCandidates = ['a','b','c','d','option a','option b','option c','option d','pilihan a','pilihan b','pilihan c','pilihan d','opsi a','opsi b','opsi c','opsi d'];
+  const allOptionsCombined = ['options','pilihan','choices','opsi'];
+  const answerCandidates = ['answer','kunci','kunci jawaban','jawaban','key'];
+  const explanationCandidates = ['pembahasan','explanation','solution','penjelasan'];
+
+  // find question
+  for(let i=0;i<norm.length;i++){
+    if(questionCandidates.includes(norm[i]) || /soal/i.test(headers[i])){
+      map.question = headers[i];
+      map.questionIx = i;
+      break;
+    }
+  }
+  // find options A-D
+  const optionCols = [];
+  for(let i=0;i<norm.length;i++){
+    const h = norm[i];
+    if(['a','b','c','d'].includes(h) || /^option\s*[abcd]$/.test(h) || /^pilihan\s*[abcd]$/.test(h) || /^opsi\s*[abcd]$/.test(h)){
+      optionCols.push({name:headers[i], ix:i});
+    }
+  }
+  // find combined options column
+  let combinedOptionsCol = -1;
+  for(let i=0;i<norm.length;i++){
+    if(allOptionsCombined.includes(norm[i]) || /pilihan/i.test(headers[i]) && !/jawaban/i.test(headers[i])){
+      combinedOptionsCol = i; break;
     }
   }
 
-  return shuffle(opts);
+  // find answer column
+  let answerCol = -1;
+  for(let i=0;i<norm.length;i++){
+    if(answerCandidates.includes(norm[i]) || /kunci/i.test(headers[i]) || /jawaban/i.test(headers[i])){
+      answerCol = i; break;
+    }
+  }
+
+  // find explanation column
+  let explCol = -1;
+  for(let i=0;i<norm.length;i++){
+    if(explanationCandidates.includes(norm[i]) || /pembahasan/i.test(headers[i]) || /penjelasan/i.test(headers[i])){
+      explCol = i; break;
+    }
+  }
+
+  map.optionCols = optionCols; // array of {name,ix}
+  map.combinedOptionsCol = combinedOptionsCol; // index or -1
+  map.answerCol = answerCol;
+  map.explCol = explCol;
+
+  // fallback heuristics if none found:
+  if(!map.question && norm.length>0){
+    // assume first column
+    map.question = headers[0];
+    map.questionIx = 0;
+  }
+  return map;
 }
 
-// application state
-let questions = []; // will hold shuffled questions with options
-let currentIndex = 0;
-let score = 0;
-const total = 3;
+/* Build internal questions array from CSV rows and header map */
+function buildQuestions(rows){
+  const headers = rows[0] || [];
+  const map = detectHeaders(headers);
+  const res = [];
+  for(let r=1;r<rows.length;r++){
+    const row = rows[r];
+    if(row.length === 0) continue;
+    const qtext = (row[map.questionIx] || '').toString().trim();
+    if(!qtext) continue;
 
-const qText = document.getElementById('question-text');
-const optsDiv = document.getElementById('options');
-const progressBar = document.getElementById('progress-bar');
-const qcount = document.getElementById('qcount');
-const nextBtn = document.getElementById('nextBtn');
-const restartBtn = document.getElementById('restart');
-const feedback = document.getElementById('feedback');
-const explanation = document.getElementById('explanation');
-const scoreBox = document.getElementById('scoreBox');
+    let opts = [];
+    // if explicit A-D columns present
+    if(map.optionCols && map.optionCols.length >= 4){
+      // ensure order A,B,C,D
+      const sorted = map.optionCols.slice().sort((x,y)=> x.ix - y.ix);
+      for(const oc of sorted) opts.push((row[oc.ix]||'').toString().trim());
+    } else if(map.combinedOptionsCol >= 0 && row[map.combinedOptionsCol]){
+      // combined options in one cell - try to split by line breaks or ; or |
+      const raw = row[map.combinedOptionsCol].toString();
+      let parts = raw.split(/\r\n|\n|\r/).map(s=>s.trim()).filter(s=>s);
+      if(parts.length < 2) parts = raw.split(/[|;]/).map(s=>s.trim()).filter(s=>s);
+      // Sometimes combined has "A. text; B. text"
+      if(parts.length===1){
+        const splitted = raw.split(/(?=[A-D]\s*\.|[A-D]\s*[:\)]|[A-D]\s*-)/i);
+        if(splitted.length>1){
+          parts = splitted.map(s=> s.replace(/^[A-D]\s*[\.\:\)\-]?\s*/i,'').trim()).filter(Boolean);
+        }
+      }
+      opts = parts;
+    } else {
+      // try columns named "pilihan a" etc by matching header names (case-insensitive)
+      const maybeOpts = [];
+      for(let i=0;i<headers.length;i++){
+        const h = headers[i].toString().toLowerCase();
+        if(/\b(a|b|c|d)\b/.test(h) || /pilihan|opsi|option/.test(h)) {
+          maybeOpts.push({ix:i, header:h});
+        }
+      }
+      if(maybeOpts.length>=4){
+        maybeOpts.sort((x,y)=>x.ix - y.ix);
+        opts = maybeOpts.map(m=> (row[m.ix]||'').toString().trim());
+      }
+    }
 
-function startQuiz(){
-  // prepare questions
-  questions = rawQuestions.map(q=>{
-    return {
-      ...q,
-      options: makeOptionsFor(q)
-    };
-  });
-  // randomize order of questions
-  shuffle(questions);
-  currentIndex = 0;
-  score = 0;
-  updateProgress();
-  renderQuestion();
-  explanation.style.display = 'none';
+    // if options less than 2, attempt to parse in-row lookups (skip this row)
+    if(opts.length < 2){
+      // fallback: if there are many columns, take next 4 columns after question column
+      const start = (map.questionIx || 0) + 1;
+      for(let k=start; k<Math.min(row.length, start+4); k++){
+        if((row[k]||'').toString().trim()) opts.push(row[k].toString().trim());
+      }
+    }
+
+    // answer (raw)
+    let rawAnswer = '';
+    if(map.answerCol >=0) rawAnswer = (row[map.answerCol]||'').toString().trim();
+    // try also header named 'kunci' etc in other columns if answer empty
+    if(!rawAnswer){
+      // search any cell that equals A/B/C/D or that matches one option exactly
+      for(let i=0;i<row.length;i++){
+        const v = (row[i]||'').toString().trim();
+        if(['a','b','c','d','A','B','C','D'].includes(v)){ rawAnswer = v; break; }
+      }
+    }
+
+    const expl = (map.explCol >= 0 && row[map.explCol]) ? row[map.explCol].toString().trim() : '';
+
+    // normalize: determine correctIndex
+    let correctIndex = -1;
+    if(rawAnswer){
+      const ra = rawAnswer.trim();
+      // if ra is single letter A-D
+      if(/^[A-D]$/i.test(ra) && opts.length >= 4){
+        const letter = ra.toUpperCase();
+        const idx = {'A':0,'B':1,'C':2,'D':3}[letter];
+        if(typeof idx === 'number') correctIndex = idx;
+      } else {
+        // try to match answer text to one of options (strict match)
+        for(let i=0;i<opts.length;i++){
+          if(opts[i] && opts[i].toString().trim() === ra) { correctIndex = i; break; }
+        }
+        // try case-insensitive contains
+        if(correctIndex === -1){
+          for(let i=0;i<opts.length;i++){
+            if(opts[i] && opts[i].toString().toLowerCase().includes(ra.toLowerCase()) && ra.length>0){
+              correctIndex = i; break;
+            }
+          }
+        }
+      }
+    }
+
+    // final fallback: if no correctIndex but options exist and rawAnswer is empty, assume opts[0] correct (best-effort)
+    if(correctIndex === -1 && opts.length>0){
+      // try matching numeric equality if answer is numeric inside some other column
+      if(rawAnswer && !isNaN(parseFloat(rawAnswer))){
+        for(let i=0;i<opts.length;i++){
+          const nopt = parseFloat((opts[i]||'').toString().replace(/[^\d\.\-]/g,''));
+          if(!isNaN(nopt) && nopt === parseFloat(rawAnswer)){ correctIndex = i; break; }
+        }
+      }
+    }
+
+    res.push({
+      question: qtext,
+      rawOptions: opts.slice(), // copy
+      correctIndex,
+      rawAnswer,
+      explanation: expl
+    });
+  }
+  return res;
+}
+
+/* Convert built questions into runtime format: produce options array and set correctIndex if possible */
+function prepareRuntimeQuestions(built){
+  const out = [];
+  for(const b of built){
+    // ensure options array length >=2
+    let opts = b.rawOptions.filter(Boolean).map(s=>s.toString().trim());
+    if(opts.length < 2){
+      // if options missing, create placeholder options (generate 3 distractors)
+      const correctText = b.rawAnswer || "Jawaban";
+      opts = [correctText];
+      while(opts.length < 4){
+        const cand = correctText + " " + (Math.floor(Math.random()*90)+10);
+        if(!opts.includes(cand)) opts.push(cand);
+      }
+    } else if(opts.length === 2){
+      // expand to 4 by adding slight variants
+      while(opts.length < 4) opts.push(opts[opts.length-1] + " (alt" + (opts.length+1) + ")");
+    } else if(opts.length === 3){
+      // add one dummy
+      opts.push(opts[0] + " (alt)");
+    }
+
+    // determine correct index robustly
+    let correctIndex = b.correctIndex;
+    if(correctIndex === -1){
+      // try match rawAnswer (if letter) again
+      const ra = b.rawAnswer || '';
+      if(/^[A-D]$/i.test(ra)){
+        const idx = {'A':0,'B':1,'C':2,'D':3}[ra.toUpperCase()];
+        correctIndex = idx;
+      } else if(ra){
+        for(let i=0;i<opts.length;i++){
+          if(opts[i].toString().trim() === ra.toString().trim()) { correctIndex = i; break; }
+        }
+      }
+    }
+
+    // last fallback: treat first option as correct if none detected
+    if(correctIndex === -1) correctIndex = 0;
+
+    out.push({
+      question: b.question,
+      options: opts.slice(),
+      correctIndex: correctIndex,
+      explanation: b.explanation || ''
+    });
+  }
+  return out;
+}
+
+/* Render a question on screen */
+function renderQuestion(idx){
+  const q = questions[idx];
+  qtext.innerText = `Soal ${idx+1}:\n\n${q.question}`;
+  optionsDivClear();
   feedback.innerText = '';
-  scoreBox.innerText = `Skor: ${score}/${total}`;
+  explanation.style.display = 'none';
   nextBtn.style.display = 'none';
-}
-function updateProgress(){
-  qcount.innerText = `Soal ${currentIndex+1} / ${total}`;
-  const pct = Math.round((currentIndex/total)*100);
-  progressBar.style.width = pct + '%';
-}
-function renderQuestion(){
-  const q = questions[currentIndex];
-  qText.innerText = `Soal ${currentIndex+1}:\n\n` + q.question;
-  optsDiv.innerHTML = '';
-  explanation.style.display = 'none';
-  feedback.innerText = '';
 
-  // create option elements
-  q.options.forEach(optText=>{
+  // create option elements with random order
+  const optIndices = q.options.map((_,i)=>i);
+  shuffle(optIndices);
+  // remember mapping from element -> original index
+  optIndices.forEach(pos=>{
     const d = document.createElement('div');
     d.className = 'opt';
     d.tabIndex = 0;
-    d.setAttribute('role','button');
-    d.innerText = optText;
-    d.onclick = ()=>selectOption(d, optText, q);
-    d.onkeydown = (e)=>{ if(e.key === 'Enter' || e.key === ' ') selectOption(d, optText, q); };
-    optsDiv.appendChild(d);
+    d.innerText = q.options[pos];
+    d.dataset.optIndex = pos;
+    d.onclick = ()=>selectOption(d, pos);
+    d.onkeydown = (e)=>{ if(e.key === 'Enter' || e.key === ' ') selectOption(d,pos); };
+    optionsDiv.appendChild(d);
   });
 
-  updateProgress();
-  nextBtn.style.display = 'none';
+  // update progress & counters
+  const pctVal = Math.round((idx / questions.length) * 100);
+  pct.style.width = pctVal + '%';
+  qcount.innerText = `${idx+1} / ${questions.length} soal`;
+  scoreBox.innerText = `Skor: ${score} / ${questions.length}`;
 }
-function disableOptions(){
+
+/* clear options area */
+function optionsDivClear(){
+  optionsDiv.innerHTML = '';
+}
+
+/* handle selection */
+function selectOption(elem, chosenIndex){
+  const q = questions[current];
+  // disable all options
   const all = document.querySelectorAll('.opt');
+  all.forEach(o=>{ o.classList.add('disabled'); o.onclick = null; });
+
+  const correctIndex = q.correctIndex;
+  // find the DOM element that holds correct answer (by data-optindex)
   all.forEach(o=>{
-    o.classList.add('disabled');
-    o.onclick = null;
+    if(parseInt(o.dataset.optIndex) === correctIndex){
+      o.classList.add('correct');
+    }
   });
-}
-function selectOption(elem, chosen, q){
-  disableOptions();
-  const correct = String(q.answer);
-  if(chosen === correct){
+
+  if(chosenIndex === correctIndex){
     elem.classList.add('correct');
     feedback.innerHTML = `<strong style="color: #bbf7d0">Benar.</strong>`;
     score++;
   } else {
     elem.classList.add('wrong');
-    // highlight correct option
-    const all = document.querySelectorAll('.opt');
-    all.forEach(o=>{
-      if(o.innerText === correct) o.classList.add('correct');
-    });
-    feedback.innerHTML = `<strong style="color: #fecaca">Salah.</strong> Jawaban benar: <strong>${correct}</strong>`;
+    // show which is correct in feedback (letter + text)
+    // find letter mapping
+    const correctText = q.options[correctIndex];
+    let letter = '?';
+    // determine current order of displayed options to find letter A-D
+    const displayed = Array.from(document.querySelectorAll('.opt'));
+    let cIdx = displayed.findIndex(d=> parseInt(d.dataset.optIndex) === correctIndex);
+    if(cIdx >= 0) letter = String.fromCharCode(65 + cIdx);
+    feedback.innerHTML = `<strong style="color: #fecaca">Salah.</strong> Jawaban benar: <strong>${correctText}</strong>`;
   }
 
-  // show pembahasan (teks asli dari dokumen)
-  explanation.style.display = 'block';
-  explanation.innerText = "Pembahasan (teks asli dari dokumen):\n\n" + q.pembahasan;
+  // show pembahasan if available
+  if(q.explanation && q.explanation.trim()){
+    explanation.style.display = 'block';
+    explanation.innerText = `Pembahasan:\n\n${q.explanation}`;
+  }
 
-  scoreBox.innerText = `Skor: ${score}/${total}`;
+  scoreBox.innerText = `Skor: ${score} / ${questions.length}`;
   nextBtn.style.display = 'inline-block';
 }
 
+/* next button */
 nextBtn.onclick = ()=>{
-  currentIndex++;
-  if(currentIndex >= total){
-    // selesai seluruh soal
-    qText.innerText = "Tes selesai.";
-    optsDiv.innerHTML = "";
-    feedback.innerHTML = `<strong>Hasil: ${score} / ${total}</strong>`;
+  current++;
+  if(current >= questions.length){
+    // finished
+    qtext.innerText = "Tes selesai.";
+    optionsDivClear();
+    feedback.innerHTML = `<strong>Hasil akhir: ${score} / ${questions.length}</strong>`;
     explanation.style.display = 'block';
-    explanation.innerText = "Sudah selesai. Tekan 'Ulang Tes' untuk mencoba lagi.";
-    progressBar.style.width = '100%';
-    qcount.innerText = `Selesai • ${total}/${total}`;
+    explanation.innerText = `Tes selesai. Skor Anda: ${score} dari ${questions.length}. Klik "Ulang Tes" untuk mengacak dan coba lagi.`;
+    pct.style.width = '100%';
+    qcount.innerText = `Selesai • ${questions.length}/${questions.length}`;
     nextBtn.style.display = 'none';
   } else {
-    renderQuestion();
+    renderQuestion(current);
   }
 };
 
+/* restart (re-load with same dataset and reshuffle) */
 restartBtn.onclick = ()=>{
-  startQuiz();
+  if(!questions.length) return;
+  shuffle(questions);
+  current = 0; score = 0;
+  renderQuestion(0);
+  nextBtn.style.display = 'none';
+  explanation.style.display = 'none';
+  feedback.innerText = '';
 };
 
-// start immediately
-startQuiz();
+/* fetch CSV from URL and initialize */
+async function loadCSV(url){
+  try{
+    loader.innerText = 'Memuat CSV...';
+    csvUrlDisplay.innerText = url;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error(`Fetch gagal: ${res.status}`);
+    const txt = await res.text();
+    // parse
+    const rows = parseCSV(txt);
+    if(rows.length < 2) throw new Error('CSV terdeteksi kosong atau hanya header.');
+    const built = buildQuestions(rows);
+    const runtime = prepareRuntimeQuestions(built);
+    if(runtime.length === 0) throw new Error('Tidak ada soal valid di CSV.');
+    questions = runtime;
+    shuffle(questions);
+    current = 0; score = 0;
+    // show UI
+    document.getElementById('loader').style.display = 'none';
+    questionArea.style.display = 'block';
+    renderQuestion(0);
+    loader.style.display = 'none';
+    qcount.innerText = `Memuat ${questions.length} soal • Siap`;
+  }catch(err){
+    loader.innerText = `Gagal memuat CSV: ${err.message}`;
+    console.error(err);
+  }
+}
 
+/* init */
+(function init(){
+  urlInput.value = defaultCSV;
+  csvUrlDisplay.innerText = defaultCSV;
+  // auto-load default CSV
+  loadCSV(defaultCSV);
+  // allow manual load when pressing Enter on input
+  urlInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      const url = urlInput.value.trim();
+      if(url) {
+        // reset UI
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('loader').innerText = 'Memuat soal...';
+        questionArea.style.display = 'none';
+        loadCSV(url);
+      }
+    }
+  });
+})();
 </script>
 </body>
 </html>
