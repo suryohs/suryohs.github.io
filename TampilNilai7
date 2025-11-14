@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Penampil Nilai</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
+    .card { background:#fff; padding:20px; border-radius:8px; max-width:800px; margin:auto; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    h1 { font-size:20px; margin-bottom:16px; }
+    select, button { padding:8px 12px; margin-right:8px; }
+    table { border-collapse:collapse; width:100%; margin-top:20px; }
+    th, td { border:1px solid #ccc; padding:8px; text-align:left; }
+    th { background:#eee; }
+    .status { margin-top:10px; font-size:14px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>Penampil Nilai</h1>
+  <div>
+    <label for="identitySelect">Pilih Identitas:</label>
+    <select id="identitySelect"></select>
+    <button id="searchBtn">Cari</button>
+  </div>
+  <div class="status" id="status"></div>
+  <table id="resultTable" style="display:none">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Email Address</th>
+        <th>Identitas</th>
+        <th>Tugas</th>
+        <th>Nilai</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<script>
+const CSR_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRD0Cmz3O1q_af3U1NwlkZEGfh_aJKaNQYk22C2Ucs0hSa1-xHm-Ovb6OIEOKe7ufxBW-tY-uA9KhPk/pub?gid=0&single=true&output=csv";
+const NILAI_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyVAl_TrhfGIxYN63YykV0aK2lq6iycBi8Ti8bh-nwb_ozjzUB65w7C-NiwKkCcUj9xEvT7JV2FBo0/pub?gid=931924041&single=true&output=csv";
+
+let csrList = [];
+let lock = false;
+
+// Parse CSV sederhana
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  return lines.map(line => line.split(","));
+}
+
+// Load CSR untuk dropdown
+async function loadCSR() {
+  const res = await fetch(CSR_URL);
+  const text = await res.text();
+  const rows = parseCSV(text);
+  csrList = rows.map(r => r[0].trim()).filter(v => v); // kolom pertama
+  const select = document.getElementById("identitySelect");
+  csrList.forEach(id => {
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = id;
+    select.appendChild(opt);
+  });
+}
+
+// Cari nilai
+async function handleSearch() {
+  if (lock) return;
+  lock = true;
+  const statusEl = document.getElementById("status");
+  statusEl.textContent = "Memuat data nilai...";
+  const identitas = document.getElementById("identitySelect").value.trim();
+  try {
+    const res = await fetch(NILAI_URL);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    const body = document.getElementById("tableBody");
+    body.innerHTML = "";
+    let count = 0;
+    rows.forEach(r => {
+      // kolom ke-3 adalah Identitas
+      if (r[2] && r[2].trim() === identitas) {
+        const tr = document.createElement("tr");
+        [0,1,2,3,4].forEach(idx => {
+          const td = document.createElement("td");
+          td.textContent = r[idx] ?? "";
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+        count++;
+      }
+    });
+    if (count > 0) {
+      document.getElementById("resultTable").style.display = "table";
+      statusEl.textContent = `Menampilkan ${count} baris untuk identitas "${identitas}".`;
+    } else {
+      document.getElementById("resultTable").style.display = "none";
+      statusEl.textContent = "Data nilai tidak ditemukan untuk identitas ini.";
+    }
+  } catch (err) {
+    statusEl.textContent = "Terjadi kesalahan saat memuat data.";
+  } finally {
+    lock = false;
+  }
+}
+
+document.getElementById("searchBtn").addEventListener("click", handleSearch);
+loadCSR();
+</script>
+</body>
+</html>
