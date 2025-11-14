@@ -44,10 +44,35 @@ const NILAI_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyVAl_TrhfGI
 let csrList = [];
 let lock = false;
 
-// Parse CSV sederhana
+// Fungsi parsing CSV dengan dukungan tanda kutip
 function parseCSV(text) {
   const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-  return lines.map(line => line.split(","));
+  return lines.map(line => {
+    const result = [];
+    let cur = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i+1] === '"') {
+          cur += '"'; i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === ',' && !inQuotes) {
+        result.push(cur.trim()); cur = "";
+      } else {
+        cur += ch;
+      }
+    }
+    result.push(cur.trim());
+    return result.map(cell => cell.replace(/^"|"$/g, ""));
+  });
+}
+
+// Normalisasi string
+function normalize(str) {
+  return str.toLowerCase().trim().replace(/\s+/g, " ");
 }
 
 // Load CSR untuk dropdown
@@ -55,7 +80,7 @@ async function loadCSR() {
   const res = await fetch(CSR_URL);
   const text = await res.text();
   const rows = parseCSV(text);
-  csrList = rows.map(r => r[0].trim()).filter(v => v); // kolom pertama
+  csrList = rows.map(r => r[0]).filter(v => v); // kolom pertama
   const select = document.getElementById("identitySelect");
   csrList.forEach(id => {
     const opt = document.createElement("option");
@@ -71,7 +96,7 @@ async function handleSearch() {
   lock = true;
   const statusEl = document.getElementById("status");
   statusEl.textContent = "Memuat data nilai...";
-  const identitas = document.getElementById("identitySelect").value.trim();
+  const identitas = document.getElementById("identitySelect").value;
   try {
     const res = await fetch(NILAI_URL);
     const text = await res.text();
@@ -80,8 +105,7 @@ async function handleSearch() {
     body.innerHTML = "";
     let count = 0;
     rows.forEach(r => {
-      // kolom ke-3 adalah Identitas
-      if (r[2] && r[2].trim() === identitas) {
+      if (r.length >= 5 && normalize(r[2]) === normalize(identitas)) {
         const tr = document.createElement("tr");
         [0,1,2,3,4].forEach(idx => {
           const td = document.createElement("td");
